@@ -1,129 +1,117 @@
-# NEUROSCAN — Look Inside an AI, Then Try to Break It
+# NEUROSCAN — AI Model Security & Interpretability Workbench
 
-> A single container that loads a small AI language model, lets you
-> peek inside its "brain" in 3D, then walks you through attacking it,
-> defending it, and grading the result — all in your browser, all on
-> your local GPU. No prior AI-security background required.
-
----
-
-## What this demo is, in plain English
-
-AI language models (the kind that power ChatGPT, Copilot, etc.) are
-black boxes by default — you give them a prompt, they give you text
-back, and what happens in between is a mystery.
-
-NEUROSCAN cracks that box open. It loads a **small, runs-on-your-GPU**
-language model (GPT-2 by default — old and tiny, but it works exactly
-like the big ones) and turns its internals into something you can
-click on:
-
-- **See it think.** Watch thousands of "neurons" light up in 3D as the
-  model reads a prompt. Hover over one and see what it actually does.
-- **Try to jailbreak it.** Run automated attacks that find weird
-  strings of text which trick the model into saying things it
-  normally refuses. Watch the attack improve in real time.
-- **Find and remove the model's "no" button.** Every safety-trained
-  model has an internal "refuse" signal. NEUROSCAN finds it, lets you
-  turn it off, and measures the damage.
-- **Adjust its personality with sliders.** Make it more honest, more
-  formal, funnier — by injecting "concept vectors" the model already
-  knows about.
-- **Put guardrails in front of it.** Toggle filters for jailbreaks,
-  off-topic chat, leaked personal info, unsafe content — then test
-  whether they actually catch attacks.
-- **Get a report card.** Every test you run feeds into a per-model
-  scorecard that ends in a single A–F letter grade. Click "generate
-  report" and an external LLM writes you a plain-English summary.
-
-If any of those bullets felt jargon-y — that's fine. The UI walks you
-through it, and every tab has a built-in "show me an example" button.
+> A single container that loads a small language model, exposes its
+> internals in a tabbed UI, runs a full stack of attacks and defenses
+> against it, and produces a per-model security report. Browser
+> frontend, local NVIDIA GPU backend.
 
 ---
 
-## Who this is for
+## What this demo does
 
-- **Engineers** evaluating an open-source model before shipping it.
-- **Security folks** who've heard of "prompt injection" and want to
-  see real attacks running, not slides.
-- **Researchers** who want a fast workbench for interpretability
-  experiments without writing scripts.
-- **The curious** — if you've wondered "what's actually happening
-  inside ChatGPT?", the small model NEUROSCAN runs works the same way.
-  You can poke at it for hours.
+NEUROSCAN loads a small transformer language model (GPT-2 Small by
+default; Pythia-70M and Gemma-2 2B also available) onto your GPU,
+hooks every layer for live activation capture, and exposes a tabbed
+UI for:
 
-You do **not** need a PhD, an ML background, or familiarity with any
-of the dozens of papers listed below. The defaults are picked to
-"just work," and there's a sample payload behind every button.
+- **Activation inspection.** A 3D viewer over every neuron in every
+  layer, plus heatmap, attention, logit-lens, KV-cache, and graph
+  views. Sparse-autoencoder decomposition exposes human-readable
+  features behind each activation.
+- **Adversarial attacks.** GCG (Greedy Coordinate Gradient) suffix
+  optimisation streamed step-by-step. LLM-driven attacks via the
+  FuzzyAI techniques (PAIR, Crescendo, Best-of-N, ActorAttack,
+  Genetic). Native probes from Garak, DeepTeam, PyRIT, Promptfoo,
+  and promptmap2.
+- **Refusal-direction abliteration.** Discover, project out, and
+  optionally write-back the model's refusal direction. Three
+  algorithms; Optuna multi-objective search returns a Pareto front
+  trading bypass rate against KL divergence.
+- **Representation engineering.** Concept-vector steering across
+  honesty, humour, formality, safety, and user-defined concepts.
+- **Defenses.** Programmable guardrails for jailbreak / topic / PII /
+  content / I-O moderation. NeMo Guardrails when available, regex
+  fallback otherwise.
+- **Interpretability.** Linear probes on activations, attribution-graph
+  circuit tracing, MoE routing analysis, embedding inversion, and
+  KV-cache attack-surface analysis (sink detection, prefix poisoning,
+  quantization drift, exhaustion).
+- **Vision-language injection.** Steganographic prompts hidden in
+  images via typography, LSB, and EXIF metadata, submitted to an
+  external VLM.
+- **Benchmarks.** TruthfulQA, Detoxify toxicity, CrowS bias, plus a
+  built-in security probe suite covering seven categories.
+- **Scoring.** Every test feeds a per-model dashboard scored across
+  eight domains (input safety, output safety, attack resistance,
+  capability, alignment depth, defense coverage, interpretability
+  coverage, plus a composite) ending in an A–F letter grade. Optional
+  LLM-narrated reports on demand.
+
+Backend: FastAPI + WebSockets, ~120 REST endpoints. Frontend: a single
+HTML page with nine tabs and Three.js viewers. Persistence: Redis.
 
 ---
 
-## What you'll see when you open it
+## Audience
 
-The UI is a single page with **nine tabs** along the top. Here's what
-each one is for, in one sentence:
+NEUROSCAN is intended for engineers evaluating an open-source model
+before deployment, security teams running red-team assessments, and
+researchers running interpretability experiments. The UI is
+self-guiding: every tab includes a sample payload, and the defaults
+produce results without configuration. Familiarity with transformer
+internals helps but is not required.
 
-| Tab | What you do here |
+---
+
+## UI tabs
+
+| Tab | Purpose |
 |---|---|
-| **Dashboard** | See the model's current letter grade and the timeline of every test you've run. |
-| **Explore** | Pick a model, type a prompt, and watch its internals — including a rotatable 3D "brain" view. |
-| **Generate** | Generate text with a personality slider (honesty / humour / formality / safety / custom). |
-| **Red Team** | Attack the model. Manual attacks, automated attacks, and a one-click "throw everything at it" pipeline. |
-| **Blue Team** | Turn defenses on and off, then test whether they catch the attacks. |
-| **Violet Team** | Combined attacker + defender scenarios — including image-based attacks on vision models. |
-| **Understand** | Deep-dive interpretability tools (most jargon-heavy tab — skip on first visit). |
-| **Evaluate** | Run standard benchmarks for truthfulness, toxicity, and bias. |
-| **History** | Every experiment, exportable as JSON. |
-
-If this is your first time, start at **Explore → 3D Brain**, then go
-to **Red Team → Auto Red Team** and click the big button. It'll run
-six different attack styles in sequence and produce a report.
+| Dashboard | Per-model letter grade and experiment timeline. |
+| Explore | Model selector, prompt input, and nine activation views including the 3D brain. |
+| Generate | Sampling with concept-vector steering; side-by-side baseline vs. steered output. |
+| Red Team | GCG, FuzzyAI techniques, Garak/DeepTeam/PyRIT/Promptfoo/promptmap2 probes, Auto Red Team pipeline. |
+| Blue Team | Per-rail toggles for guardrails; guarded vs. unguarded comparisons. |
+| Violet Team | Combined offense+defense scenarios including VLM injection. |
+| Understand | Activation patching, neuron diff, SAE decomposition, logit lens, circuit tracing, probe training, abliteration workbench, MoE routing, embedding inversion. |
+| Evaluate | TruthfulQA, Detoxify toxicity, CrowS bias, OWASP LLM Top 10 compliance. |
+| History | Experiment log, exportable as JSON. |
 
 ---
 
-## A short jargon glossary (for when you click around)
+## Glossary
 
-You don't have to read this — but if a label confuses you, here's the
-plain-English version.
-
-- **Transformer** — the family of AI models that includes GPT,
-  Claude, Gemini. NEUROSCAN works on small open ones.
-- **Activations / neurons** — the numbers flowing through the model
-  while it processes your prompt. "Neuron lighting up" = that number
-  is big right now.
-- **Refusal direction** — a specific pattern inside the model that
-  fires when it's about to say "I can't help with that." Finding it
-  is half the trick; removing it is the other half.
-- **Abliteration** — surgically removing that refusal pattern. The
-  model stops refusing — but it may also get dumber. NEUROSCAN
-  measures both.
-- **GCG (Greedy Coordinate Gradient)** — an automated attack that
-  finds a gibberish-looking suffix you can add to any prompt to make
-  the model comply. The classic "jailbreak as math problem."
-- **Red / Blue / Violet team** — attacking / defending /
-  attacking-and-defending-at-the-same-time.
-- **Linear probe** — a tiny detector trained on the model's
-  internals. "Is this prompt about to make the model lie? Probe says
-  87% yes." Very fast to train.
-- **Circuit / attribution graph** — a map showing which internal
-  parts of the model caused which output. Like a flame graph, but for
-  thought.
-- **MoE (Mixture of Experts)** — modern big models route different
-  tokens to different sub-networks. NEUROSCAN visualises that
-  routing.
-- **KV cache** — the model's short-term memory during generation.
-  Surprisingly attackable.
-- **Embedding inversion** — embeddings are the "fingerprints" search
-  engines store. Inversion = reconstructing the original text from
-  the fingerprint. Bad news for RAG pipelines that thought their
-  vector stores were private.
-- **Sparse autoencoder (SAE)** — a tool that takes a confusing blob
-  of activations and decomposes it into human-readable features
-  ("this neuron means 'Paris'"). The current hot thing in
-  interpretability.
-- **TransformerLens / SAELens / repeng / nanoGCG** — the open-source
-  libraries doing the heavy lifting. NEUROSCAN is the friendly UI
-  over them.
+- **Activations / neurons** — the numeric values produced at each
+  layer as the model processes a prompt.
+- **Transformer** — the model architecture used by GPT, Claude,
+  Gemini, etc. NEUROSCAN operates on small open variants.
+- **Refusal direction** — a direction in residual-stream space whose
+  activation correlates with the model refusing a request.
+- **Abliteration** — projecting out (or permanently writing out) the
+  refusal direction to suppress refusal behaviour. Measured against
+  KL divergence to detect capability loss.
+- **GCG (Greedy Coordinate Gradient)** — gradient-based search for an
+  adversarial suffix that, appended to a prompt, induces a target
+  completion.
+- **Red / Blue / Violet team** — offensive testing / defensive
+  controls / combined offense-and-defense scenarios.
+- **Linear probe** — a small classifier trained on hidden states to
+  detect a property (refusal intent, truthfulness, toxicity, etc.).
+- **Circuit / attribution graph** — a graph of attention heads, MLP
+  neurons, and residual positions with edges weighted by causal
+  influence on a chosen output.
+- **MoE (Mixture of Experts)** — per-token expert routing in modern
+  large models. NEUROSCAN visualises routing (simulated for dense
+  models).
+- **KV cache** — the keys and values cached during generation. Treated
+  here as an attack surface.
+- **Embedding inversion** — partial text reconstruction from a stored
+  embedding vector; relevant to RAG-pipeline data leakage.
+- **Sparse autoencoder (SAE)** — decomposes activations into a larger
+  set of sparse, individually interpretable features.
+- **TransformerLens / SAELens / repeng / nanoGCG** — upstream
+  libraries used for activation capture, SAE decomposition, steering,
+  and GCG respectively.
 
 ---
 
@@ -134,8 +122,7 @@ Blackwell, **ARM / aarch64** architecture). It will run on standard
 x86_64 NVIDIA Linux hosts as well, but the bundled Dockerfile pins
 **PyTorch 2.9.1 + CUDA 13.0** wheels because that's the only stable
 combination on aarch64 with the GB10's `sm_121` compute capability. On
-older GPUs you may need to override `CUDA_ARCH` at build time (see
-Configuration below).
+older GPUs override `CUDA_ARCH` at build time (see Configuration).
 
 ---
 
@@ -143,38 +130,35 @@ Configuration below).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| OS | Linux | macOS / Windows lack pass-through GPU support — won't work. |
-| Docker | 24.x or newer | With Compose **v2** (`docker compose`, not `docker-compose`). |
-| GPU | NVIDIA, ≥ 8 GB VRAM | GPT-2 fits in 2 GB; larger models in the UI need ~6 GB. |
+| OS | Linux | macOS / Windows lack pass-through GPU support. |
+| Docker | 24.x or newer | With Compose v2 (`docker compose`). |
+| GPU | NVIDIA, ≥ 8 GB VRAM | GPT-2 Small fits in 2 GB; Gemma-2 2B + SAEs needs ~6 GB. |
 | GPU driver | Recent enough for your CUDA version | `nvidia-smi` must work on the host. |
 | NVIDIA Container Toolkit | Installed and configured for Docker | Required to expose the GPU to the container. |
-| Disk | ~10 GB | Image (~3 GB) + model cache + database volume. |
+| Disk | ~10 GB | Image (~3 GB) + HuggingFace cache + Redis volume. |
 | RAM | 16 GB recommended | 8 GB will work but may swap during initial build. |
-| LLM endpoint | OpenAI-compatible (e.g. host's Ollama) | Used as the **attacker / explainer** model — see below. |
-| HF token | Only for gated models | Set `HF_TOKEN` if you switch to Gemma-2 (Google's licence). |
+| LLM endpoint | OpenAI-compatible (e.g. host's Ollama) | Used as attacker / explainer / report generator. |
+| HF token | Only for gated models | Set `HF_TOKEN` for Gemma-2 (licence acceptance required). |
 
-**Quick note on the LLM endpoint:** NEUROSCAN runs a small model
-locally on your GPU (that's the one it dissects). It also needs a
-separate, *larger* model — typically running in Ollama on the same
-machine — to play the role of "attacker" and "report writer." You
-configure that endpoint in `.env`.
+The probe model (GPT-2 / Pythia / Gemma-2) runs locally on your GPU.
+The external LLM endpoint is a separate, typically larger model used
+only for attacker roleplay, explainer narratives, and report
+generation.
 
 ---
 
-## Installation (step-by-step)
+## Installation
 
-These instructions assume a fresh Linux box. If you already have Docker
-+ the NVIDIA Container Toolkit working, skip to step 4.
+These instructions assume a fresh Linux host. If Docker and the NVIDIA
+Container Toolkit are already configured, skip to step 4.
 
-### 1. Verify your GPU is visible to the host
+### 1. Verify GPU visibility
 
 ```bash
 nvidia-smi
 ```
 
-You should see a table with your GPU model, driver version, and CUDA
-version. If this command fails, **fix your NVIDIA driver before going
-further** — the rest will not work.
+If this fails, fix the NVIDIA driver before continuing.
 
 ### 2. Install Docker Engine + Compose v2
 
@@ -182,13 +166,12 @@ Ubuntu / Debian:
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker "$USER"   # let your user run docker without sudo
-newgrp docker                      # apply the new group in this shell
-docker compose version             # should print "Docker Compose version v2.x.x"
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker compose version
 ```
 
-If `docker compose version` reports "command not found", install the
-plugin:
+If `docker compose version` reports "command not found":
 
 ```bash
 sudo apt install docker-compose-plugin
@@ -211,14 +194,11 @@ sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 ```
 
-Verify it works inside Docker:
+Verify GPU access inside Docker:
 
 ```bash
 docker run --rm --gpus all nvidia/cuda:13.0.0-base-ubuntu22.04 nvidia-smi
 ```
-
-You should see the same `nvidia-smi` table you saw on the host. If
-this fails, fix it before continuing.
 
 ### 4. Clone the repo
 
@@ -227,22 +207,21 @@ git clone https://github.com/gleaven/neuroscan.git
 cd neuroscan
 ```
 
-### 5. Create the environment file
+### 5. Configure `.env`
 
 ```bash
 cp .env.example .env
 $EDITOR .env
 ```
 
-The two **required** entries are:
+Required entries:
 
 | Variable | Example |
 |---|---|
 | `OLLAMA_BASE_URL` | `http://host.docker.internal:11434/v1` |
-| `LLM_MODEL` | `gpt-oss:20b` (or any model already present in your Ollama: `ollama list`) |
+| `LLM_MODEL` | `gpt-oss:20b` (or any model already pulled in your Ollama) |
 
-The compose file will refuse to start if either is empty. Everything
-else has sensible defaults.
+Compose refuses to start if either is empty.
 
 ### 6. Build and start
 
@@ -250,48 +229,35 @@ else has sensible defaults.
 docker compose up -d --build
 ```
 
-The first build takes **5–15 minutes** (downloads the CUDA base image
-~3 GB, installs PyTorch and the rest of the AI stack). Subsequent
-starts take ~10 seconds.
+First build: 5–15 minutes. Subsequent starts: ~10 seconds.
 
-### 7. Verify it's healthy
+### 7. Verify health
 
 ```bash
 docker compose ps
-# both `demo-neuroscan` and `demo-redis` should show "healthy" within ~2 min
-
 curl -s http://localhost:8080/health
 ```
 
-Expected output:
+Expected:
 
 ```json
 {"status": "ok", "service": "neuroscan", "model": "gpt2-small"}
 ```
 
-The first model load (GPT-2 plus its interpretability "lens") is
-downloaded from HuggingFace into a Docker volume; that takes a few
-seconds. Switching to a bigger model from the UI later will trigger a
-larger download (~5 GB) the first time.
-
 ### 8. Open the UI
 
 <http://localhost:8080/>
 
-The UI lands on the **Dashboard** tab. Don't worry that it's empty at
-first — it fills up as you run things. Suggested first stops:
+The UI lands on Dashboard. Suggested starting path: Explore → 3D
+Brain, then Red Team → Auto Red Team.
 
-1. **Explore → 3D Brain** — type a prompt, watch the model think.
-2. **Red Team → Auto Red Team** — push the button, get a report.
-3. **Dashboard** — see the model's first letter grade.
-
-### 9. (Optional) Tail the logs
+### 9. (Optional) Tail logs
 
 ```bash
 docker compose logs -f neuroscan
 ```
 
-You should see the engines initialise in order:
+Engines initialise in order:
 
 ```
 NEUROSCAN: loading default model gpt2-small...
@@ -316,30 +282,27 @@ NEUROSCAN ready
 
 ## Configuration
 
-All variables can be set in `.env` or exported in your shell.
-
-| Variable | Default | What it controls |
+| Variable | Default | Purpose |
 |---|---|---|
 | `OLLAMA_BASE_URL` | _(required)_ | OpenAI-compatible base URL. Use `http://host.docker.internal:11434/v1` for the host's Ollama, or a LAN IP. |
-| `LLM_MODEL` | _(required)_ | Model name passed to the attacker / explainer / report writer. Must already be pulled in your Ollama (`ollama pull <name>`). |
-| `HF_TOKEN` | _(empty)_ | HuggingFace token. Required only for gated models (e.g. Gemma-2). |
-| `APP_PORT` | `8080` | Browser-facing port for the UI and API. |
-| `REDIS_HOST_PORT` | `6379` | Where the bundled Redis is exposed on the host. |
-| `REDIS_URL` | `redis://demo-redis:6379/14` | Connection string used by NEUROSCAN; override when you BYO Redis. |
-| `LANGFUSE_HOST` | _(empty)_ | Optional Langfuse base URL. Empty = observability disabled (no-op). |
-| `LANGFUSE_PUBLIC_KEY` | _(empty)_ | Langfuse public key (BYO Langfuse only). |
-| `LANGFUSE_SECRET_KEY` | _(empty)_ | Langfuse secret key (BYO Langfuse only). |
-| `DEMO_HOSTNAME` | `localhost` | Hostname Caddy serves under (proxy profile only). |
+| `LLM_MODEL` | _(required)_ | Model name passed to the attacker / explainer / report generator. Must already be pulled in your Ollama. |
+| `HF_TOKEN` | _(empty)_ | HuggingFace token, required only for gated models (Gemma-2). |
+| `APP_PORT` | `8080` | UI and REST/WebSocket port. |
+| `REDIS_HOST_PORT` | `6379` | Bundled Redis host port. |
+| `REDIS_URL` | `redis://demo-redis:6379/14` | Connection string; override for BYO Redis. |
+| `LANGFUSE_HOST` | _(empty)_ | Optional Langfuse base URL. Empty = observability disabled. |
+| `LANGFUSE_PUBLIC_KEY` | _(empty)_ | Langfuse public key. |
+| `LANGFUSE_SECRET_KEY` | _(empty)_ | Langfuse secret key. |
+| `DEMO_HOSTNAME` | `localhost` | Caddy server name (proxy profile only). |
 | `HTTP_PORT` | `8081` | Caddy HTTP port (proxy profile only). |
 | `HTTPS_PORT` | `8443` | Caddy HTTPS port (proxy profile only). |
 
 ### Build-time arguments
 
-If you're not on a GB10 / `sm_121` GPU, override the CUDA arch when
-building:
+Override the CUDA arch on non-GB10 GPUs:
 
 ```bash
-docker compose build --build-arg CUDA_ARCH=8.6   # e.g. RTX 3090
+docker compose build --build-arg CUDA_ARCH=8.6
 docker compose up -d
 ```
 
@@ -350,15 +313,14 @@ Common values: `8.0` (A100), `8.6` (RTX 30xx), `8.9` (RTX 40xx),
 
 ## External services (BYO)
 
-If you'd rather use your own Redis (e.g. a managed instance), uncomment
-`REDIS_URL` in `.env` and start with the BYO override:
+To use an external Redis, uncomment `REDIS_URL` in `.env` and start
+with the BYO override:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.byo.yml up -d
 ```
 
-`docker-compose.byo.yml` removes the bundled `redis` service so only
-the `neuroscan` container runs locally.
+`docker-compose.byo.yml` removes the bundled Redis service.
 
 | Variable | Example |
 |---|---|
@@ -368,13 +330,13 @@ the `neuroscan` container runs locally.
 | `LANGFUSE_PUBLIC_KEY` | `pk-lf-…` |
 | `LANGFUSE_SECRET_KEY` | `sk-lf-…` |
 
-Redis stores the per-model scorecard, the experiment timeline, and
-cached results so you don't recompute. The demo will still load and
-run without Redis — it just logs warnings and skips persistence.
+Redis stores the per-model dashboard, the experiment timeline, and
+cached abliteration directions. NEUROSCAN runs without Redis but logs
+warnings and skips persistence.
 
-The OpenAI-compatible LLM endpoint is always external (NEUROSCAN does
-not bundle Ollama). Any endpoint that speaks `/v1/chat/completions`
-works: Ollama, vLLM, LM Studio, an OpenAI proxy, etc.
+The OpenAI-compatible LLM endpoint is always external. Any endpoint
+implementing `/v1/chat/completions` works: Ollama, vLLM, LM Studio, an
+OpenAI proxy, etc.
 
 ---
 
@@ -388,136 +350,111 @@ host:
 DEMO_HOSTNAME=neuroscan.example.com docker compose --profile proxy up -d
 ```
 
-For local testing keep `DEMO_HOSTNAME=localhost` and Caddy will issue
-a self-signed cert.
+For local testing keep `DEMO_HOSTNAME=localhost`; Caddy issues a
+self-signed cert.
 
 ---
 
 ## Authentication
 
-NEUROSCAN runs **without authentication** by default. For shared
-deployments, put one of these in front of it:
+NEUROSCAN runs without authentication by default. For shared
+deployments, place one of these in front:
 
-- **Caddy basic auth** — add a `basic_auth` block to the Caddyfile.
-- **oauth2-proxy in front of Caddy** — for SSO-style auth.
-- **Cloudflare Tunnel + Access policies** — easiest if you're already
-  on Cloudflare.
+- Caddy basic auth (`basic_auth` block in the Caddyfile)
+- oauth2-proxy in front of Caddy
+- Cloudflare Tunnel + Access policies
 
-The demo intentionally exposes every red-team capability without
-gating. **Do not put it on the public internet unauthenticated.** It
-will happily teach a stranger how to jailbreak a model.
+Every red-team capability is exposed without gating. Do not expose
+this service to the public internet unauthenticated.
 
 ---
 
-## Under the hood (for the curious)
+## Architecture
 
-If you don't care how it's built, skip this section — the UI is the
-product. But for anyone who wants to extend it:
+`server.py` is a FastAPI shell (~4100 lines) over ~14 specialised
+engines. Each engine owns one capability and streams progress over
+WebSockets.
 
-NEUROSCAN is a single FastAPI server (`server.py`, ~4100 lines) that
-wires together ~14 specialised "engines." Each engine owns one
-capability and streams progress over WebSockets so the UI updates
-live.
-
-| Engine | What it does (in one line) |
+| Module | Purpose |
 |---|---|
-| `activation_engine.py` | Loads the model, captures activations, drives the 3D viewer and feature decomposition. |
-| `abliteration_engine.py` | Finds and removes the model's "refusal" pattern; exports the modified weights. |
-| `adversarial_engine.py` | Runs GCG jailbreak attacks one step at a time so the UI can show the loss curve. |
-| `steering_engine.py` | The "personality sliders" — concept vectors for honesty, humour, etc. |
-| `benchmark_engine.py` | Standard truthfulness / toxicity / bias tests, plus a built-in security probe suite. |
-| `optimizer_engine.py` | Optuna search over abliteration parameters — finds the best trade-off automatically. |
-| `guardrails_engine.py` | The Blue Team filters (jailbreak / topic / PII / content / I-O moderation). |
-| `probe_engine.py` | Trains tiny "mind-reading" detectors on the model's hidden states. |
-| `fuzzyai_engine.py` | LLM-driven attacks: PAIR, Crescendo, Best-of-N, ActorAttack, Genetic. |
-| `circuit_engine.py` | Builds an attribution graph showing what inside the model caused the output. |
-| `moe_engine.py` | Mixture-of-Experts routing analysis (simulated for dense models). |
-| `embedding_engine.py` | Embedding inversion attacks + a 3D embedding-space view. |
-| `vlm_engine.py` | Sends sneaky images (typography / LSB / EXIF hidden prompts) to a vision model. |
-| `kvcache_engine.py` | Pokes at the model's short-term memory: sinks, prefix poisoning, drift, exhaustion. |
-| `redteam_suite.py` | Native re-implementations of Garak / DeepTeam / PyRIT / Promptfoo / promptmap2 probes. |
-| `auto_redteam.py` | The "throw everything at it" pipeline that chains six attack stages. |
+| `activation_engine.py` | TransformerLens model manager, hooks, SAELens decomposition, 3D viewer, attention-head ablation, neuron diff scans, activation patching. |
+| `abliteration_engine.py` | Refusal-direction discovery and removal (standard / norm-preserving / biprojected), batch testing, KL scoring, weight orthogonalisation, export. |
+| `adversarial_engine.py` | Step-by-step nanoGCG loop with streamed progress. |
+| `steering_engine.py` | repeng-based concept-vector steering. |
+| `benchmark_engine.py` | TruthfulQA, Detoxify toxicity, CrowS bias, built-in seven-category probe suite. |
+| `optimizer_engine.py` | Optuna multi-objective search over abliteration parameters. |
+| `guardrails_engine.py` | NeMo-Guardrails-style rails with regex fallback. |
+| `probe_engine.py` | Linear probes on hidden states; built-in and user-defined concepts. |
+| `fuzzyai_engine.py` | LLM-assisted attacks: PAIR, Crescendo, Best-of-N, ActorAttack, Genetic. |
+| `circuit_engine.py` | Attribution-graph generation; attention-based fallback. |
+| `kvcache_engine.py` | KV-cache analysis and attack simulations. |
+| `moe_engine.py` | Mixture-of-Experts routing analysis. |
+| `embedding_engine.py` | Embedding inversion and PaCMAP visualisation. |
+| `vlm_engine.py` | Steganographic VLM prompt-injection images (typography / LSB / EXIF). |
+| `redteam_suite.py` | Native Garak / DeepTeam / PyRIT / Promptfoo / promptmap2 probes. |
+| `auto_redteam.py` | Six-stage automated red-team pipeline orchestrator. |
 
-The frontend is a single page (`static/index.html`) with Three.js
-viewers for the 3D and graph views. ~120 REST endpoints plus a single
-WebSocket channel (`/ws/activations`) — discover them via DevTools or
-the OpenAPI spec at `/docs`.
+Frontend: `static/index.html` (single page) with `static/js/app.js`,
+`neural-viz.js`, `viz-views.js` driving the Three.js views. ~120 REST
+endpoints plus `/ws/activations` for streaming.
 
 ---
 
 ## Troubleshooting
 
-- **Compose refuses to start with `set OLLAMA_BASE_URL …` / `set
-  LLM_MODEL …`** — both are required. Edit `.env` and set them to
-  your Ollama (or other OpenAI-compatible) endpoint and a model name
-  already pulled there.
+- **Compose refuses to start with `set OLLAMA_BASE_URL …` /
+  `set LLM_MODEL …`** — both are required. Edit `.env`.
 - **`OLLAMA_BASE_URL` unreachable from inside the container** — from
   the container, run `curl ${OLLAMA_BASE_URL%/v1}/api/tags`. On Linux,
-  `host.docker.internal` requires either an `extra_hosts` entry on the
-  service or a LAN IP. Switching to `http://<LAN-IP>:11434/v1` is the
-  most robust fix.
+  `host.docker.internal` requires either an `extra_hosts` entry or a
+  LAN IP. Switching to `http://<LAN-IP>:11434/v1` is the most robust
+  fix.
 - **`nvidia-smi` works on host but not in container** — the NVIDIA
-  Container Toolkit isn't wired into Docker. Run `sudo nvidia-ctk
-  runtime configure --runtime=docker && sudo systemctl restart docker`
-  and try the test container in step 3 again.
+  Container Toolkit isn't wired into Docker. Run
+  `sudo nvidia-ctk runtime configure --runtime=docker && sudo
+  systemctl restart docker` and re-run the step-3 test container.
 - **Gemma-2 download fails 401/403** — accept the licence on
-  huggingface.co for `google/gemma-2-2b`, then set `HF_TOKEN` in
-  `.env` and `docker compose restart neuroscan`.
-- **Out of memory loading a larger model** — stay on GPT-2 in the UI,
-  or run on a host with more VRAM. Switching models is reversible.
-- **`unsupported gpu architecture` during PyTorch import** — your
-  GPU's compute capability isn't in the wheel's arch list. Rebuild
-  with `--build-arg CUDA_ARCH=<your arch>` (see Configuration).
+  huggingface.co for `google/gemma-2-2b`, set `HF_TOKEN` in `.env`,
+  `docker compose restart neuroscan`.
+- **Out of memory loading Gemma-2** — stay on GPT-2 Small or run on a
+  host with more VRAM. Model switching is reversible.
+- **`unsupported gpu architecture` during PyTorch import** — rebuild
+  with `--build-arg CUDA_ARCH=<your arch>`.
 - **Container restarts in a loop** — almost always a GPU/driver
   mismatch. Confirm `docker run --rm --gpus all
-  nvidia/cuda:13.0.0-base-ubuntu22.04 nvidia-smi` works from your
-  shell.
+  nvidia/cuda:13.0.0-base-ubuntu22.04 nvidia-smi` works.
 - **Port collision on 8080 or 6379** — change `APP_PORT` and/or
   `REDIS_HOST_PORT` in `.env`.
 - **Dashboard loses history after `docker compose down -v`** — `-v`
-  removes the named Redis volume. Drop the `-v` to keep it.
-- **`demo-neuroscan` health check failing on first boot** — give it
-  longer; the first model download can push past the 120 s
-  start-period. Check `docker compose logs neuroscan` for stack
-  traces.
+  removes the named Redis volume.
+- **Health check failing on first boot** — the first model + SAE
+  download can exceed the 120 s start-period. Check
+  `docker compose logs neuroscan`.
 
 ---
 
 ## FAQ
 
-**Q: I don't know anything about AI security. Will I understand this?**
-Yes. Open the UI, click around the Red Team tab, push the "Auto Red
-Team" button, and read the report it generates. The terminology will
-start to click within ~15 minutes. The glossary above covers the
-words you'll see most often.
+**Can I use a CPU?** No. TransformerLens activation extraction,
+SAELens decomposition, and GCG gradients all require CUDA.
 
-**Q: Can I use a CPU?** No. The interpretability and attack
-techniques all need a GPU; the demo will refuse to start without one.
+**Do the models run locally?** The probe model (GPT-2 Small /
+Pythia-70M / Gemma-2 2B) runs locally on the GPU via TransformerLens;
+every interpretability and abliteration feature operates on it. The
+configured Ollama endpoint is used only for attacker roleplay,
+explainer narratives, and report generation.
 
-**Q: Do the AI models actually run on my GPU, or do they call out to
-the internet?** The model being studied (GPT-2, Pythia, Gemma-2) runs
-**locally on your GPU** — that's the whole point. The Ollama endpoint
-you configure is also local (just on the host instead of in the
-container) and only plays the *attacker* and *report-writer* roles.
+**Is anything sent to the internet?** Only the initial HuggingFace
+model and SAE downloads, cached in a Docker volume. All inference,
+attacks, and analyses run locally.
 
-**Q: Is anything sent to the internet?** Only the initial model
-downloads from HuggingFace (cached forever in a Docker volume). All
-inference, attacks, and analyses run locally.
+**Can I add my own model?** Yes. Extend `MODEL_REGISTRY` in
+`activation_engine.py` with the TransformerLens model name, layer
+count, hidden size, and matching SAE release.
 
-**Q: Can I add my own model?** Yes — extend `MODEL_REGISTRY` in
-`activation_engine.py` with a TransformerLens-compatible model name,
-layer count, hidden size, and a matching SAE release.
-
-**Q: I just want one number that tells me if my model is secure.**
-Run **Auto Red Team** from the Red Team tab. It chains six attack
-stages and writes a single composite score to the Dashboard, with an
-LLM-written narrative report. It is *not* a substitute for a real
-security review — but it's a great starting point.
-
-**Q: Why GPT-2? Isn't that ancient?** It is — and that's the point.
-GPT-2 is small enough to fit on any GPU, but it's the same family of
-model as the giants. Every technique here works on bigger models too;
-GPT-2 just lets you iterate fast.
+**How do I get a one-shot vulnerability report?** Run Auto Red Team
+from the Red Team tab. It chains six attack stages and writes a
+composite report to the Dashboard.
 
 ---
 
