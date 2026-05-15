@@ -1,126 +1,129 @@
-# NEUROSCAN — AI Model Security & Interpretability Workbench
+# NEUROSCAN — Look Inside an AI, Then Try to Break It
 
-> A single container that loads a transformer, dissects its activations
-> in 3D, attacks it with state-of-the-art jailbreak techniques, defends
-> it with programmable guardrails, and grades the result — all in your
-> browser, all on your local GPU.
-
----
-
-## What this demo is
-
-NEUROSCAN is an end-to-end workbench for **mechanistic interpretability
-and AI red/blue/violet teaming**. It loads a small transformer
-(GPT-2 Small by default; Pythia-70M and Gemma-2 2B available) into
-**TransformerLens**, hooks every layer for live activation capture, and
-exposes a tabbed UI that lets you:
-
-- Watch thousands of neurons light up in 3D as the model processes a
-  prompt, then decompose those activations into human-interpretable
-  features with **Sparse Autoencoders (SAELens)**.
-- Run **GCG (Greedy Coordinate Gradient)** adversarial-suffix
-  optimisation step-by-step, watch the loss descend in real time, and
-  see whether the discovered suffix actually breaks the model.
-- Discover the **refusal direction** in residual space, project it out
-  ("abliteration"), and measure both the bypass rate and the KL
-  divergence cost — then let an Optuna optimiser sweep configurations
-  and return a Pareto front.
-- Steer generation with **representation-engineering vectors**
-  (honesty, humour, formality, …) via simple sliders.
-- Run a stack of red-team frameworks natively (GCG, FuzzyAI PAIR /
-  Crescendo / Best-of-N / ActorAttack / Genetic, plus Garak-,
-  DeepTeam-, PyRIT-, promptmap2-style probes) and a blue-team layer
-  (NeMo-Guardrails-style rails for jailbreak / topic / PII / content
-  safety).
-- Trace **circuits** — attribution graphs from input tokens to output
-  logits — train **linear probes** for hidden properties, analyse
-  **MoE routing**, demonstrate **embedding inversion** privacy
-  attacks, and probe **KV-cache** vulnerabilities (sink detection,
-  prefix poisoning, quantization drift, cache exhaustion).
-- Test **vision-language models** with steganographic prompt-injection
-  images (typography, LSB, EXIF metadata).
-- Run alignment benchmarks (TruthfulQA, toxicity via Detoxify, CrowS
-  bias) and aggregate everything into a per-model **dashboard with
-  letter grades**, persisted in Redis.
-
-There is one **persistent backend** (FastAPI + WebSockets) and one
-**single-page UI** (`static/index.html`) organised into eight tabs:
-**Dashboard, Explore, Generate, Red Team, Blue Team, Violet Team,
-Understand, Evaluate, History**. An external **OpenAI-compatible LLM
-endpoint** (typically Ollama on the host) is used for the explainer
-narratives, FuzzyAI attacker model, and PDF-style report generation.
+> A single container that loads a small AI language model, lets you
+> peek inside its "brain" in 3D, then walks you through attacking it,
+> defending it, and grading the result — all in your browser, all on
+> your local GPU. No prior AI-security background required.
 
 ---
 
-## The engines
+## What this demo is, in plain English
 
-NEUROSCAN is organised as a thin FastAPI shell (`server.py`) on top of
-~14 specialised engines. Each engine owns one capability domain and
-streams progress over WebSockets so the UI updates live.
+AI language models (the kind that power ChatGPT, Copilot, etc.) are
+black boxes by default — you give them a prompt, they give you text
+back, and what happens in between is a mystery.
 
-| Engine | Lines | What it does |
-|---|---|---|
-| `activation_engine.py` | 1451 | TransformerLens model manager + activation extraction. Owns the model registry (GPT-2 Small, Pythia-70M, Gemma-2 2B), runs forward passes with full caching, drives the 3D activation viewer, attention-head ablation, neuron diff scans, residual-stream geometry, activation patching, and SAELens sparse-autoencoder feature decomposition. |
-| `abliteration_engine.py` | 1354 | Refusal-direction discovery and removal. Implements standard, norm-preserving, and biprojected abliteration; multi-layer extraction; per-layer SNR and quality metrics; KL-divergence capability scoring; 33-marker refusal detection; HuggingFace dataset loading; permanent weight orthogonalisation; export of directions and abliterated weights. |
-| `adversarial_engine.py` | 299 | nanoGCG-based **Greedy Coordinate Gradient** suffix optimisation, run step-by-step (not via `nanogcg.run()`) so each step's loss + best suffix can be streamed to the browser. Supports pause / resume / stop. |
-| `steering_engine.py` | 282 | **Representation engineering** via `repeng`. Pre-defined contrastive prompt pairs for honesty, humour, formality, safety, etc.; extracts concept vectors; injects them at generation time with adjustable strength. |
-| `benchmark_engine.py` | 828 | Alignment benchmarks (TruthfulQA, Detoxify toxicity, CrowS bias) and the built-in security probe suite — 7 categories (jailbreak, injection, exfiltration, system_prompt, encoding_attacks, multi_turn, toxicity), ~54 probes total. |
-| `optimizer_engine.py` | 342 | **Optuna TPE multi-objective optimiser** for abliteration parameters. Dual objective: minimise post-abliteration refusal rate **and** minimise KL divergence. Returns a Pareto front (inspired by Heretic). |
-| `guardrails_engine.py` | 471 | Programmable safety rails — jailbreak, topic, PII, content-safety, input/output moderation. Uses NeMo Guardrails when installed, otherwise falls back to a regex layer that still demonstrates the defensive flow. |
-| `probe_engine.py` | 325 | **Linear probes on activations** (Anthropic "Simple probes can catch sleeper agents"). Built-in datasets for refusal intent, truthfulness, toxicity; user-defined concept training from positive/negative prompt pairs. |
-| `fuzzyai_engine.py` | 789 | LLM-assisted jailbreak techniques inspired by CyberArk FuzzyAI: **PAIR** (iterative refinement by attacker LLM), **Crescendo** (multi-turn escalation), **Best-of-N**, **ActorAttack** (semantic network), **Genetic** (GA crossover/mutation). All attacker calls go through the configured OpenAI-compatible endpoint. |
-| `circuit_engine.py` | 340 | Attribution-graph generation — nodes for attention heads, MLP neurons, residual positions; edges for causal influence with attribution scores. Falls back to attention-based attribution when `circuit-tracer` is unavailable. |
-| `moe_engine.py` | 184 | Mixture-of-Experts routing analysis — per-layer / per-token expert assignments, router probabilities, expert specialisation, ablation. Simulates routing on dense models. |
-| `embedding_engine.py` | 214 | Embedding security: **inversion attacks** (partial text reconstruction from embedding vectors, demonstrating RAG-pipeline leakage) and dimensionality-reduced (PaCMAP) embedding-space visualisation. |
-| `vlm_engine.py` | 305 | Vision-language model testing. Generates **steganographic injection images** (typography / LSB / EXIF) and submits them to an external VLM endpoint to measure visual prompt-injection susceptibility. |
-| `kvcache_engine.py` | 325 | KV-cache forensics — attention-sink detection, cache-influence scoring, **prefix poisoning** simulation, **quantization drift**, **cache exhaustion** projection, cross-turn drift. The cache is treated as an unsigned attack surface. |
+NEUROSCAN cracks that box open. It loads a **small, runs-on-your-GPU**
+language model (GPT-2 by default — old and tiny, but it works exactly
+like the big ones) and turns its internals into something you can
+click on:
 
-Two orchestration layers ride on top:
+- **See it think.** Watch thousands of "neurons" light up in 3D as the
+  model reads a prompt. Hover over one and see what it actually does.
+- **Try to jailbreak it.** Run automated attacks that find weird
+  strings of text which trick the model into saying things it
+  normally refuses. Watch the attack improve in real time.
+- **Find and remove the model's "no" button.** Every safety-trained
+  model has an internal "refuse" signal. NEUROSCAN finds it, lets you
+  turn it off, and measures the damage.
+- **Adjust its personality with sliders.** Make it more honest, more
+  formal, funnier — by injecting "concept vectors" the model already
+  knows about.
+- **Put guardrails in front of it.** Toggle filters for jailbreaks,
+  off-topic chat, leaked personal info, unsafe content — then test
+  whether they actually catch attacks.
+- **Get a report card.** Every test you run feeds into a per-model
+  scorecard that ends in a single A–F letter grade. Click "generate
+  report" and an external LLM writes you a plain-English summary.
 
-| Module | Purpose |
+If any of those bullets felt jargon-y — that's fine. The UI walks you
+through it, and every tab has a built-in "show me an example" button.
+
+---
+
+## Who this is for
+
+- **Engineers** evaluating an open-source model before shipping it.
+- **Security folks** who've heard of "prompt injection" and want to
+  see real attacks running, not slides.
+- **Researchers** who want a fast workbench for interpretability
+  experiments without writing scripts.
+- **The curious** — if you've wondered "what's actually happening
+  inside ChatGPT?", the small model NEUROSCAN runs works the same way.
+  You can poke at it for hours.
+
+You do **not** need a PhD, an ML background, or familiarity with any
+of the dozens of papers listed below. The defaults are picked to
+"just work," and there's a sample payload behind every button.
+
+---
+
+## What you'll see when you open it
+
+The UI is a single page with **nine tabs** along the top. Here's what
+each one is for, in one sentence:
+
+| Tab | What you do here |
 |---|---|
-| `redteam_suite.py` | Native re-implementations of probes from **Garak** (hallucination, data leakage, misinformation), **DeepTeam** (RAG, LLM-as-judge), **PyRIT** (multi-turn orchestration with converters), **Promptfoo** (OWASP LLM Top 10), and **promptmap2** (system-prompt extraction). No external tool installs required. |
-| `auto_redteam.py` | **Automated end-to-end pipeline** — chains Security Scan → Fuzz Mutations → Red Team Suite → GCG → FuzzyAI PAIR → Abliteration Test, weights each stage, streams per-stage progress, and produces a single composite vulnerability report. |
+| **Dashboard** | See the model's current letter grade and the timeline of every test you've run. |
+| **Explore** | Pick a model, type a prompt, and watch its internals — including a rotatable 3D "brain" view. |
+| **Generate** | Generate text with a personality slider (honesty / humour / formality / safety / custom). |
+| **Red Team** | Attack the model. Manual attacks, automated attacks, and a one-click "throw everything at it" pipeline. |
+| **Blue Team** | Turn defenses on and off, then test whether they catch the attacks. |
+| **Violet Team** | Combined attacker + defender scenarios — including image-based attacks on vision models. |
+| **Understand** | Deep-dive interpretability tools (most jargon-heavy tab — skip on first visit). |
+| **Evaluate** | Run standard benchmarks for truthfulness, toxicity, and bias. |
+| **History** | Every experiment, exportable as JSON. |
 
-`server.py` itself (~4100 lines) wires these engines together, exposes
-~120 REST endpoints + a WebSocket channel, and maintains a per-model
-**ModelDashboard** (Redis-backed) that converts every test result into
-domain scores (input safety, output safety, attack resistance,
-capability, alignment depth, defense coverage, interpretability
-coverage) and a final A–F letter grade.
+If this is your first time, start at **Explore → 3D Brain**, then go
+to **Red Team → Auto Red Team** and click the big button. It'll run
+six different attack styles in sequence and produce a report.
 
 ---
 
-## Capabilities (at a glance)
+## A short jargon glossary (for when you click around)
 
-- One transformer loaded into TransformerLens, hooked at every layer,
-  with live SAELens sparse-feature decomposition.
-- 3D activation visualisation (Three.js) plus heatmap, attention,
-  logit-lens, brain-view, thought-map, knowledge-graph, animated, and
-  KV-cache views.
-- GCG adversarial-suffix optimisation with live loss curve,
-  pause/resume/stop.
-- Refusal-direction abliteration with three algorithms, Optuna-driven
-  Pareto-front parameter search, batch testing, perm-weight
-  orthogonalisation, direction export.
-- Representation-engineering steering across pre-defined and custom
-  concepts.
-- Native red-team stack: GCG, FuzzyAI (PAIR / Crescendo / Best-of-N /
-  ActorAttack / Genetic), Garak / DeepTeam / PyRIT / Promptfoo /
-  promptmap2 probes.
-- NeMo-Guardrails-style blue-team rails (jailbreak / topic / PII /
-  content safety / I/O moderation).
-- Linear activation probes for refusal intent, truthfulness, toxicity,
-  and user-defined concepts.
-- Circuit tracing, MoE routing analysis, embedding inversion, KV-cache
-  attack surface.
-- VLM injection via typography / LSB / EXIF steganography.
-- Alignment benchmarks: TruthfulQA, Detoxify toxicity, CrowS bias.
-- One-click **Auto Red Team** pipeline producing a composite report.
-- Per-model dashboard with letter grade, persisted timeline, and
-  LLM-generated narrative reports.
-- Bundled Redis for dashboard / experiment / cached-direction
-  persistence; optional Caddy reverse proxy with HTTPS.
+You don't have to read this — but if a label confuses you, here's the
+plain-English version.
+
+- **Transformer** — the family of AI models that includes GPT,
+  Claude, Gemini. NEUROSCAN works on small open ones.
+- **Activations / neurons** — the numbers flowing through the model
+  while it processes your prompt. "Neuron lighting up" = that number
+  is big right now.
+- **Refusal direction** — a specific pattern inside the model that
+  fires when it's about to say "I can't help with that." Finding it
+  is half the trick; removing it is the other half.
+- **Abliteration** — surgically removing that refusal pattern. The
+  model stops refusing — but it may also get dumber. NEUROSCAN
+  measures both.
+- **GCG (Greedy Coordinate Gradient)** — an automated attack that
+  finds a gibberish-looking suffix you can add to any prompt to make
+  the model comply. The classic "jailbreak as math problem."
+- **Red / Blue / Violet team** — attacking / defending /
+  attacking-and-defending-at-the-same-time.
+- **Linear probe** — a tiny detector trained on the model's
+  internals. "Is this prompt about to make the model lie? Probe says
+  87% yes." Very fast to train.
+- **Circuit / attribution graph** — a map showing which internal
+  parts of the model caused which output. Like a flame graph, but for
+  thought.
+- **MoE (Mixture of Experts)** — modern big models route different
+  tokens to different sub-networks. NEUROSCAN visualises that
+  routing.
+- **KV cache** — the model's short-term memory during generation.
+  Surprisingly attackable.
+- **Embedding inversion** — embeddings are the "fingerprints" search
+  engines store. Inversion = reconstructing the original text from
+  the fingerprint. Bad news for RAG pipelines that thought their
+  vector stores were private.
+- **Sparse autoencoder (SAE)** — a tool that takes a confusing blob
+  of activations and decomposes it into human-readable features
+  ("this neuron means 'Paris'"). The current hot thing in
+  interpretability.
+- **TransformerLens / SAELens / repeng / nanoGCG** — the open-source
+  libraries doing the heavy lifting. NEUROSCAN is the friendly UI
+  over them.
 
 ---
 
@@ -142,13 +145,19 @@ Configuration below).
 |---|---|---|
 | OS | Linux | macOS / Windows lack pass-through GPU support — won't work. |
 | Docker | 24.x or newer | With Compose **v2** (`docker compose`, not `docker-compose`). |
-| GPU | NVIDIA, ≥ 8 GB VRAM | GPT-2 Small fits in 2 GB; Gemma-2 2B + SAEs needs ~6 GB. |
+| GPU | NVIDIA, ≥ 8 GB VRAM | GPT-2 fits in 2 GB; larger models in the UI need ~6 GB. |
 | GPU driver | Recent enough for your CUDA version | `nvidia-smi` must work on the host. |
 | NVIDIA Container Toolkit | Installed and configured for Docker | Required to expose the GPU to the container. |
-| Disk | ~10 GB | Image (~3 GB) + HuggingFace cache (Gemma-2 ≈ 5 GB) + Redis volume. |
+| Disk | ~10 GB | Image (~3 GB) + model cache + database volume. |
 | RAM | 16 GB recommended | 8 GB will work but may swap during initial build. |
-| LLM endpoint | OpenAI-compatible (e.g. host's Ollama) | Required for explainer, FuzzyAI attacker, and report generation. |
-| HF token | Only for gated models | Set `HF_TOKEN` if you switch to Gemma-2 2B (licence acceptance). |
+| LLM endpoint | OpenAI-compatible (e.g. host's Ollama) | Used as the **attacker / explainer** model — see below. |
+| HF token | Only for gated models | Set `HF_TOKEN` if you switch to Gemma-2 (Google's licence). |
+
+**Quick note on the LLM endpoint:** NEUROSCAN runs a small model
+locally on your GPU (that's the one it dissects). It also needs a
+separate, *larger* model — typically running in Ollama on the same
+machine — to play the role of "attacker" and "report writer." You
+configure that endpoint in `.env`.
 
 ---
 
@@ -242,8 +251,8 @@ docker compose up -d --build
 ```
 
 The first build takes **5–15 minutes** (downloads the CUDA base image
-~3 GB, installs PyTorch + TransformerLens + SAELens + the long
-dependency tree). Subsequent starts take ~10 seconds.
+~3 GB, installs PyTorch and the rest of the AI stack). Subsequent
+starts take ~10 seconds.
 
 ### 7. Verify it's healthy
 
@@ -260,19 +269,21 @@ Expected output:
 {"status": "ok", "service": "neuroscan", "model": "gpt2-small"}
 ```
 
-The first model load (GPT-2 Small + its SAE release) is downloaded
-from HuggingFace into the `neuroscan-model-cache` volume; that takes a
-few seconds. Switching to Gemma-2 2B from the UI later will trigger a
+The first model load (GPT-2 plus its interpretability "lens") is
+downloaded from HuggingFace into a Docker volume; that takes a few
+seconds. Switching to a bigger model from the UI later will trigger a
 larger download (~5 GB) the first time.
 
 ### 8. Open the UI
 
 <http://localhost:8080/>
 
-The UI lands on the **Dashboard** tab. Switch a model in the top bar
-(GPT-2 Small / Pythia-70M / Gemma-2 2B), then explore Red Team / Blue
-Team / Violet Team / Understand / Evaluate. The 3D activation viewer
-lives under **Explore → 3D Brain**.
+The UI lands on the **Dashboard** tab. Don't worry that it's empty at
+first — it fills up as you run things. Suggested first stops:
+
+1. **Explore → 3D Brain** — type a prompt, watch the model think.
+2. **Red Team → Auto Red Team** — push the button, get a report.
+3. **Dashboard** — see the model's first letter grade.
 
 ### 9. (Optional) Tail the logs
 
@@ -309,10 +320,10 @@ All variables can be set in `.env` or exported in your shell.
 
 | Variable | Default | What it controls |
 |---|---|---|
-| `OLLAMA_BASE_URL` | _(required)_ | OpenAI-compatible base URL. Mapped internally to `LITELLM_BASE_URL` and `OPENAI_BASE_URL`. Use `http://host.docker.internal:11434/v1` for the host's Ollama, or a LAN IP. |
-| `LLM_MODEL` | _(required)_ | Model name passed to the explainer / FuzzyAI attacker / report generator. Must already be pulled in your Ollama (`ollama pull <name>`). |
-| `HF_TOKEN` | _(empty)_ | HuggingFace token. Required only for gated probe models (Gemma-2 2B). |
-| `APP_PORT` | `8080` | Browser-facing port for the UI and REST/WebSocket API. |
+| `OLLAMA_BASE_URL` | _(required)_ | OpenAI-compatible base URL. Use `http://host.docker.internal:11434/v1` for the host's Ollama, or a LAN IP. |
+| `LLM_MODEL` | _(required)_ | Model name passed to the attacker / explainer / report writer. Must already be pulled in your Ollama (`ollama pull <name>`). |
+| `HF_TOKEN` | _(empty)_ | HuggingFace token. Required only for gated models (e.g. Gemma-2). |
+| `APP_PORT` | `8080` | Browser-facing port for the UI and API. |
 | `REDIS_HOST_PORT` | `6379` | Where the bundled Redis is exposed on the host. |
 | `REDIS_URL` | `redis://demo-redis:6379/14` | Connection string used by NEUROSCAN; override when you BYO Redis. |
 | `LANGFUSE_HOST` | _(empty)_ | Optional Langfuse base URL. Empty = observability disabled (no-op). |
@@ -337,47 +348,6 @@ Common values: `8.0` (A100), `8.6` (RTX 30xx), `8.9` (RTX 40xx),
 
 ---
 
-## Live controls (in the browser)
-
-The UI is tabbed; the major surfaces are:
-
-- **Dashboard** — per-model letter grade and timeline. Each completed
-  test (security scan, GCG, FuzzyAI, abliteration, benchmark, probe,
-  guardrails check, interpretability tool) writes a timeline entry,
-  contributes to a domain score, and can be turned into an
-  LLM-narrated report on demand.
-- **Explore** — model selector (GPT-2 Small / Pythia-70M / Gemma-2
-  2B), prompt input, and nine activation visualisations: executive
-  summary, technical, heatmap, attention, logit-lens, **3D brain**,
-  thought map, knowledge graph, animated, KV-cache. SAE feature
-  decomposition is a click away from any neuron.
-- **Generate** — sampling with steering. Pick a concept vector
-  (honesty / humour / formality / safety / custom), set strength, and
-  compare baseline vs. steered output side-by-side.
-- **Red Team** — start/stop GCG with live loss curve; run FuzzyAI
-  techniques (PAIR / Crescendo / Best-of-N / ActorAttack / Genetic);
-  run the Garak/DeepTeam/PyRIT/Promptfoo/promptmap2 probe suite; fire
-  the **Auto Red Team** pipeline.
-- **Blue Team** — toggle each guardrail on/off, send test prompts,
-  see which rail fired, compare guarded vs. unguarded responses.
-- **Violet Team** — combined offense+defense scenarios:
-  persuasion-resistance, social-engineering, trust-claim scoring,
-  sycophancy detection, vision-language injection.
-- **Understand** — interpretability deep dives: activation patching,
-  neuron diff scans, SAE decomposition, logit lens, **circuit
-  tracing**, linear-probe training, abliteration workbench (compute
-  direction, batch test, strength sweep, Optuna optimisation, cache
-  management), MoE routing, embedding inversion.
-- **Evaluate** — TruthfulQA / Detoxify toxicity / CrowS bias;
-  OWASP LLM Top 10 compliance.
-- **History** — Redis-backed experiment log, exportable as JSON.
-
-All controls are also exposed as REST + WebSocket endpoints (~120
-endpoints under `/api/*` and a single `/ws/activations` channel for
-streaming). Open the network panel in DevTools to discover them.
-
----
-
 ## External services (BYO)
 
 If you'd rather use your own Redis (e.g. a managed instance), uncomment
@@ -398,9 +368,9 @@ the `neuroscan` container runs locally.
 | `LANGFUSE_PUBLIC_KEY` | `pk-lf-…` |
 | `LANGFUSE_SECRET_KEY` | `sk-lf-…` |
 
-Redis stores the per-model dashboard, the experiment timeline, and
-cached abliteration directions. The demo will still load and run
-without Redis — it just logs warnings and skips persistence.
+Redis stores the per-model scorecard, the experiment timeline, and
+cached results so you don't recompute. The demo will still load and
+run without Redis — it just logs warnings and skips persistence.
 
 The OpenAI-compatible LLM endpoint is always external (NEUROSCAN does
 not bundle Ollama). Any endpoint that speaks `/v1/chat/completions`
@@ -434,40 +404,44 @@ deployments, put one of these in front of it:
   on Cloudflare.
 
 The demo intentionally exposes every red-team capability without
-gating; do not put it on the public internet unauthenticated.
+gating. **Do not put it on the public internet unauthenticated.** It
+will happily teach a stranger how to jailbreak a model.
 
 ---
 
-## Architecture (file map)
+## Under the hood (for the curious)
 
-| File | Purpose |
+If you don't care how it's built, skip this section — the UI is the
+product. But for anyone who wants to extend it:
+
+NEUROSCAN is a single FastAPI server (`server.py`, ~4100 lines) that
+wires together ~14 specialised "engines." Each engine owns one
+capability and streams progress over WebSockets so the UI updates
+live.
+
+| Engine | What it does (in one line) |
 |---|---|
-| `server.py` | FastAPI app, ~120 REST endpoints + `/ws/activations`. Lifespan boots all engines, ModelDashboard, ExperimentTracker. ~4100 lines. |
-| `activation_engine.py` | Model registry + TransformerLens manager. Owns hooks, SAELens decomposition, geometry, patching, head ablation, diff scans. |
-| `abliteration_engine.py` | Refusal-direction discovery + removal (standard / norm-preserving / biprojected), batch testing, perplexity, weight orthogonalisation, export. |
-| `optimizer_engine.py` | Optuna multi-objective optimiser over abliteration parameters. |
-| `adversarial_engine.py` | Step-by-step nanoGCG loop with live progress streaming. |
-| `steering_engine.py` | repeng-based concept-vector steering. |
-| `benchmark_engine.py` | TruthfulQA, Detoxify toxicity, CrowS bias, built-in 7-category security probes. |
-| `guardrails_engine.py` | NeMo-Guardrails-style rails with regex fallback. |
-| `probe_engine.py` | Linear probes on hidden states. |
-| `fuzzyai_engine.py` | LLM-assisted attacks: PAIR, Crescendo, Best-of-N, ActorAttack, Genetic. |
-| `circuit_engine.py` | Attribution-graph generation (with attention-based fallback). |
-| `kvcache_engine.py` | KV-cache forensics + attack simulations. |
+| `activation_engine.py` | Loads the model, captures activations, drives the 3D viewer and feature decomposition. |
+| `abliteration_engine.py` | Finds and removes the model's "refusal" pattern; exports the modified weights. |
+| `adversarial_engine.py` | Runs GCG jailbreak attacks one step at a time so the UI can show the loss curve. |
+| `steering_engine.py` | The "personality sliders" — concept vectors for honesty, humour, etc. |
+| `benchmark_engine.py` | Standard truthfulness / toxicity / bias tests, plus a built-in security probe suite. |
+| `optimizer_engine.py` | Optuna search over abliteration parameters — finds the best trade-off automatically. |
+| `guardrails_engine.py` | The Blue Team filters (jailbreak / topic / PII / content / I-O moderation). |
+| `probe_engine.py` | Trains tiny "mind-reading" detectors on the model's hidden states. |
+| `fuzzyai_engine.py` | LLM-driven attacks: PAIR, Crescendo, Best-of-N, ActorAttack, Genetic. |
+| `circuit_engine.py` | Builds an attribution graph showing what inside the model caused the output. |
 | `moe_engine.py` | Mixture-of-Experts routing analysis (simulated for dense models). |
-| `embedding_engine.py` | Embedding inversion + PaCMAP visualisation. |
-| `vlm_engine.py` | Steganographic VLM injection (typography / LSB / EXIF). |
-| `redteam_suite.py` | Native Garak / DeepTeam / PyRIT / Promptfoo / promptmap2 probes. |
-| `auto_redteam.py` | Six-stage automated red-team pipeline orchestrator. |
-| `static/index.html` | Single-page UI (~290 KB). Eight tabs, nine activation views. |
-| `static/js/` | `app.js`, `neural-viz.js`, `viz-views.js` — Three.js viewers + tab logic. |
-| `static/css/neuroscan.css` | UI styling. |
-| `demo_samples/` | Pre-canned JSON payloads served by `/api/demo/{feature}` so each tab has an instant "show me an example" button. |
-| `Dockerfile` | CUDA 13.0 base, PyTorch 2.9.1, all Python deps. |
-| `docker-compose.yml` | NEUROSCAN + Redis + (opt-in) Caddy. |
-| `docker-compose.byo.yml` | Strips out the bundled Redis when you BYO. |
-| `Caddyfile` | Reverse-proxy config. |
-| `requirements.txt` | FastAPI, transformer-lens, sae-lens, nanogcg, repeng, detoxify, datasets, optuna, pacmap, redis. |
+| `embedding_engine.py` | Embedding inversion attacks + a 3D embedding-space view. |
+| `vlm_engine.py` | Sends sneaky images (typography / LSB / EXIF hidden prompts) to a vision model. |
+| `kvcache_engine.py` | Pokes at the model's short-term memory: sinks, prefix poisoning, drift, exhaustion. |
+| `redteam_suite.py` | Native re-implementations of Garak / DeepTeam / PyRIT / Promptfoo / promptmap2 probes. |
+| `auto_redteam.py` | The "throw everything at it" pipeline that chains six attack stages. |
+
+The frontend is a single page (`static/index.html`) with Three.js
+viewers for the 3D and graph views. ~120 REST endpoints plus a single
+WebSocket channel (`/ws/activations`) — discover them via DevTools or
+the OpenAPI spec at `/docs`.
 
 ---
 
@@ -489,11 +463,11 @@ gating; do not put it on the public internet unauthenticated.
 - **Gemma-2 download fails 401/403** — accept the licence on
   huggingface.co for `google/gemma-2-2b`, then set `HF_TOKEN` in
   `.env` and `docker compose restart neuroscan`.
-- **Out of memory loading Gemma-2** — stay on GPT-2 Small in the UI,
+- **Out of memory loading a larger model** — stay on GPT-2 in the UI,
   or run on a host with more VRAM. Switching models is reversible.
-- **`unsupported gpu architecture` during PyTorch import** — your GPU's
-  compute capability isn't in the wheel's arch list. Rebuild with
-  `--build-arg CUDA_ARCH=<your arch>` (see Configuration).
+- **`unsupported gpu architecture` during PyTorch import** — your
+  GPU's compute capability isn't in the wheel's arch list. Rebuild
+  with `--build-arg CUDA_ARCH=<your arch>` (see Configuration).
 - **Container restarts in a loop** — almost always a GPU/driver
   mismatch. Confirm `docker run --rm --gpus all
   nvidia/cuda:13.0.0-base-ubuntu22.04 nvidia-smi` works from your
@@ -503,7 +477,7 @@ gating; do not put it on the public internet unauthenticated.
 - **Dashboard loses history after `docker compose down -v`** — `-v`
   removes the named Redis volume. Drop the `-v` to keep it.
 - **`demo-neuroscan` health check failing on first boot** — give it
-  longer; the first model + SAE download can push past the 120 s
+  longer; the first model download can push past the 120 s
   start-period. Check `docker compose logs neuroscan` for stack
   traces.
 
@@ -511,29 +485,39 @@ gating; do not put it on the public internet unauthenticated.
 
 ## FAQ
 
-**Q: Can I use a CPU?** No. TransformerLens activation extraction +
-SAELens decomposition + GCG gradients all assume CUDA; the demo will
-refuse to start without a visible NVIDIA GPU.
+**Q: I don't know anything about AI security. Will I understand this?**
+Yes. Open the UI, click around the Red Team tab, push the "Auto Red
+Team" button, and read the report it generates. The terminology will
+start to click within ~15 minutes. The glossary above covers the
+words you'll see most often.
 
-**Q: Do the models actually run on my GPU, or do they call Ollama?**
-The probe model (GPT-2 Small / Pythia-70M / Gemma-2 2B) runs locally
-on your GPU via TransformerLens — that's what every interpretability
-and abliteration feature operates on. The **Ollama endpoint** is only
-used as the *attacker* / *explainer* / *report-writer* LLM (FuzzyAI
-attacker model, dashboard report narratives, executive summaries).
+**Q: Can I use a CPU?** No. The interpretability and attack
+techniques all need a GPU; the demo will refuse to start without one.
 
-**Q: Is anything sent to the internet?** Only the initial HuggingFace
-model + SAE downloads (cached in a Docker volume). All inference,
-attacks, and analyses run locally. The Ollama endpoint can also be on
-the same host.
+**Q: Do the AI models actually run on my GPU, or do they call out to
+the internet?** The model being studied (GPT-2, Pythia, Gemma-2) runs
+**locally on your GPU** — that's the whole point. The Ollama endpoint
+you configure is also local (just on the host instead of in the
+container) and only plays the *attacker* and *report-writer* roles.
+
+**Q: Is anything sent to the internet?** Only the initial model
+downloads from HuggingFace (cached forever in a Docker volume). All
+inference, attacks, and analyses run locally.
 
 **Q: Can I add my own model?** Yes — extend `MODEL_REGISTRY` in
-`activation_engine.py` with the TransformerLens model name, layer
-count, hidden size, and matching SAE release.
+`activation_engine.py` with a TransformerLens-compatible model name,
+layer count, hidden size, and a matching SAE release.
 
-**Q: How do I get a one-shot vulnerability report?** Run **Auto Red
-Team** from the Red Team tab. It chains six stages and posts a
-weighted summary back to the Dashboard with an LLM-narrated report.
+**Q: I just want one number that tells me if my model is secure.**
+Run **Auto Red Team** from the Red Team tab. It chains six attack
+stages and writes a single composite score to the Dashboard, with an
+LLM-written narrative report. It is *not* a substitute for a real
+security review — but it's a great starting point.
+
+**Q: Why GPT-2? Isn't that ancient?** It is — and that's the point.
+GPT-2 is small enough to fit on any GPU, but it's the same family of
+model as the giants. Every technique here works on bigger models too;
+GPT-2 just lets you iterate fast.
 
 ---
 
