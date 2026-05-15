@@ -1,0 +1,23 @@
+{
+  "demo": true,
+  "model": "gpt2-small",
+  "type": "abliteration_compute",
+  "n_directions": 12,
+  "quality_score": 0.78,
+  "avg_snr": 2.14,
+  "avg_cosine_dissimilarity": 0.67,
+  "top_layers": [7, 8, 9, 10, 6],
+  "directions": [
+    {"layer": 7, "layer_type": "resid_post", "magnitude": 3.42, "snr": 2.31, "cosine_dissimilarity": 0.72},
+    {"layer": 8, "layer_type": "resid_post", "magnitude": 3.18, "snr": 2.45, "cosine_dissimilarity": 0.69},
+    {"layer": 9, "layer_type": "resid_post", "magnitude": 2.95, "snr": 2.08, "cosine_dissimilarity": 0.65},
+    {"layer": 10, "layer_type": "resid_post", "magnitude": 2.71, "snr": 1.89, "cosine_dissimilarity": 0.61},
+    {"layer": 6, "layer_type": "resid_post", "magnitude": 2.54, "snr": 1.76, "cosine_dissimilarity": 0.58}
+  ],
+  "batch_test": {
+    "refusal_rate_before": 0.85,
+    "refusal_rate_after": 0.10,
+    "kl_divergence": 0.312,
+    "prompts_tested": 20
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "demo": true,
+  "type": "violet_trust",
+  "total": 10,
+  "correct": 6,
+  "trust_accuracy": 0.6,
+  "automation_bias": 0.6,
+  "override_accuracy": 0.4,
+  "false_trust": 3,
+  "false_override": 1,
+  "true_trust": 4,
+  "true_override": 2,
+  "n_true_claims": 5,
+  "n_false_claims": 5,
+  "calibration_score": 0.6
+}

@@ -1,0 +1,42 @@
+{
+  "demo": true,
+  "model": "gpt2-small",
+  "type": "circuit_trace",
+  "prompt": "The capital of France is",
+  "target_token": "Paris",
+  "tokens": ["<|endoftext|>", "The", " capital", " of", " France", " is"],
+  "nodes": [
+    {"id": "input_0", "label": "<BOS>", "type": "input", "layer": -1, "value": 12.4, "position": 0},
+    {"id": "input_1", "label": "The", "type": "input", "layer": -1, "value": 8.7, "position": 1},
+    {"id": "input_2", "label": "capital", "type": "input", "layer": -1, "value": 9.2, "position": 2},
+    {"id": "input_3", "label": "of", "type": "input", "layer": -1, "value": 6.1, "position": 3},
+    {"id": "input_4", "label": "France", "type": "input", "layer": -1, "value": 11.8, "position": 4},
+    {"id": "input_5", "label": "is", "type": "input", "layer": -1, "value": 7.3, "position": 5},
+    {"id": "attn_L5_H1", "label": "L5H1", "type": "attention", "layer": 5, "value": 4.2, "description": "Country-capital association head"},
+    {"id": "attn_L7_H3", "label": "L7H3", "type": "attention", "layer": 7, "value": 5.8, "description": "Factual recall head — attends to 'France'"},
+    {"id": "attn_L8_H0", "label": "L8H0", "type": "attention", "layer": 8, "value": 3.9, "description": "Name mover head — copies proper nouns"},
+    {"id": "attn_L9_H2", "label": "L9H2", "type": "attention", "layer": 9, "value": 6.1, "description": "Output composition head"},
+    {"id": "attn_L10_H5", "label": "L10H5", "type": "attention", "layer": 10, "value": 3.4, "description": "Final aggregation"},
+    {"id": "mlp_5", "label": "MLP-5", "type": "mlp", "layer": 5, "value": 8.1, "description": "Geographic knowledge store"},
+    {"id": "mlp_7", "label": "MLP-7", "type": "mlp", "layer": 7, "value": 7.4, "description": "Factual association amplification"},
+    {"id": "mlp_9", "label": "MLP-9", "type": "mlp", "layer": 9, "value": 5.2, "description": "Output boosting"},
+    {"id": "output", "label": "Paris", "type": "output", "layer": 12, "value": 0.847, "description": "Output probability: 84.7%"}
+  ],
+  "edges": [
+    {"source": "input_4", "target": "attn_L5_H1", "weight": 0.72, "type": "attention"},
+    {"source": "input_2", "target": "attn_L5_H1", "weight": 0.45, "type": "attention"},
+    {"source": "input_4", "target": "attn_L7_H3", "weight": 0.89, "type": "attention"},
+    {"source": "input_2", "target": "attn_L7_H3", "weight": 0.31, "type": "attention"},
+    {"source": "input_4", "target": "attn_L8_H0", "weight": 0.67, "type": "attention"},
+    {"source": "attn_L5_H1", "target": "attn_L7_H3", "weight": 0.38, "type": "residual"},
+    {"source": "attn_L7_H3", "target": "attn_L9_H2", "weight": 0.52, "type": "residual"},
+    {"source": "attn_L8_H0", "target": "attn_L9_H2", "weight": 0.41, "type": "residual"},
+    {"source": "attn_L9_H2", "target": "attn_L10_H5", "weight": 0.35, "type": "residual"},
+    {"source": "mlp_5", "target": "output", "weight": 0.28, "type": "mlp"},
+    {"source": "mlp_7", "target": "output", "weight": 0.42, "type": "mlp"},
+    {"source": "mlp_9", "target": "output", "weight": 0.18, "type": "mlp"},
+    {"source": "attn_L9_H2", "target": "output", "weight": 0.62, "type": "direct"},
+    {"source": "attn_L10_H5", "target": "output", "weight": 0.31, "type": "direct"},
+    {"source": "attn_L7_H3", "target": "output", "weight": 0.48, "type": "direct"}
+  ]
+}

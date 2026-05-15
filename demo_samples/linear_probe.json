@@ -1,0 +1,19 @@
+{
+  "demo": true,
+  "model": "gpt2-small",
+  "type": "probe_training",
+  "concept": "refusal_intent",
+  "n_samples": 128,
+  "n_layers": 12,
+  "mean_accuracy": 0.74,
+  "max_accuracy": 0.91,
+  "max_layer": 8,
+  "layer_accuracies": [0.52, 0.55, 0.58, 0.63, 0.68, 0.73, 0.79, 0.85, 0.91, 0.88, 0.82, 0.71],
+  "per_layer_scores": [0.51, 0.54, 0.57, 0.62, 0.67, 0.72, 0.78, 0.84, 0.90, 0.87, 0.81, 0.70],
+  "insights": {
+    "peak_layer": 8,
+    "safety_layers": [7, 8, 9],
+    "early_layers_neutral": true,
+    "interpretation": "The model's refusal decision crystallizes at layers 7-9 (mid-to-late). This matches the abliteration analysis showing refusal directions strongest at these layers."
+  }
+}

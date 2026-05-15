@@ -1,0 +1,11 @@
+# BYO override: skip the bundled Redis. Set REDIS_URL (and OLLAMA_BASE_URL)
+# in .env and start with:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.byo.yml up -d
+
+services:
+  redis:
+    deploy:
+      replicas: 0
+  neuroscan:
+    depends_on: !reset []

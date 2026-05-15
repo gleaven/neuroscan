@@ -1,0 +1,4 @@
+# Activate with: docker compose --profile proxy up -d
+{$DEMO_HOSTNAME:localhost} {
+	reverse_proxy neuroscan:8080
+}

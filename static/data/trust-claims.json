@@ -1,0 +1,158 @@
+{
+  "cybersecurity": {
+    "easy": [
+      {"claim": "A firewall is a physical wall built inside data centers to prevent unauthorized access to servers.", "is_true": false, "confidence": 87, "explanation": "A firewall is software or a network device that filters traffic, not a physical wall."},
+      {"claim": "HTTPS uses TLS to encrypt data transmitted between a web browser and a server.", "is_true": true, "confidence": 94, "explanation": "HTTPS indeed uses TLS (Transport Layer Security) for encryption."},
+      {"claim": "SQL injection attacks work by injecting malicious SQL statements into application queries.", "is_true": true, "confidence": 91, "explanation": "SQL injection exploits unsanitized input to manipulate database queries."},
+      {"claim": "Antivirus software can detect 100% of all known and unknown malware.", "is_true": false, "confidence": 72, "explanation": "No antivirus achieves 100% detection, especially against zero-day threats."},
+      {"claim": "Two-factor authentication adds a second layer of verification beyond just a password.", "is_true": true, "confidence": 96, "explanation": "2FA requires something you know (password) plus something you have or are."},
+      {"claim": "VPNs make your internet activity completely invisible to everyone, including your VPN provider.", "is_true": false, "confidence": 82, "explanation": "VPN providers can see your traffic; they just encrypt it from others. Your ISP sees VPN traffic."}
+    ],
+    "medium": [
+      {"claim": "The NIST Cybersecurity Framework organizes its core functions as Identify, Protect, Detect, Respond, and Recover.", "is_true": true, "confidence": 89, "explanation": "These are the five core functions of the NIST CSF."},
+      {"claim": "AES-256 encryption has been publicly broken by researchers at GCHQ using quantum computing.", "is_true": false, "confidence": 61, "explanation": "AES-256 has not been broken. No practical quantum attack against AES-256 exists."},
+      {"claim": "A zero-day vulnerability is one that has been known for zero days before being publicly disclosed.", "is_true": true, "confidence": 78, "explanation": "Zero-day means the vendor has had zero days to fix it before exploitation."},
+      {"claim": "The Heartbleed bug was a buffer over-read vulnerability in the OpenSSL cryptographic library.", "is_true": true, "confidence": 92, "explanation": "Heartbleed (CVE-2014-0160) was indeed a buffer over-read in OpenSSL's heartbeat extension."},
+      {"claim": "MITRE ATT&CK framework was developed by CISA as part of their national defense mandate.", "is_true": false, "confidence": 85, "explanation": "MITRE ATT&CK was developed by MITRE Corporation, not CISA."},
+      {"claim": "Ransomware typically uses symmetric encryption to lock files because it's faster than asymmetric encryption.", "is_true": true, "confidence": 76, "explanation": "Ransomware usually encrypts files with AES (symmetric) and encrypts the AES key with RSA (asymmetric)."}
+    ],
+    "hard": [
+      {"claim": "In TLS 1.3, the handshake completes in one round trip (1-RTT), reducing latency compared to TLS 1.2's two round trips.", "is_true": true, "confidence": 88, "explanation": "TLS 1.3 achieves 1-RTT handshakes (and even 0-RTT for resumed sessions)."},
+      {"claim": "The Spectre vulnerability exploits branch prediction in CPUs and can be fully mitigated through software patches alone.", "is_true": false, "confidence": 71, "explanation": "Spectre cannot be fully mitigated by software alone; some variants require hardware changes or microcode updates."},
+      {"claim": "In a Kerberos authentication system, the Ticket Granting Ticket (TGT) is encrypted with the user's password hash.", "is_true": false, "confidence": 82, "explanation": "The TGT is encrypted with the KDC's secret key (krbtgt), not the user's password hash. The user's password is used to decrypt the session key."},
+      {"claim": "Side-channel attacks like Rowhammer exploit electrical interference between adjacent memory cells in DRAM.", "is_true": true, "confidence": 77, "explanation": "Rowhammer induces bit flips in neighboring DRAM rows through repeated access patterns."},
+      {"claim": "Certificate Transparency logs are append-only and publicly auditable, making it impossible to issue fraudulent certificates undetected.", "is_true": false, "confidence": 90, "explanation": "CT logs make fraudulent certificates detectable, not impossible. A CA could still misissue a cert; CT just ensures it will eventually be discovered."},
+      {"claim": "BGP hijacking allows an attacker to reroute internet traffic by announcing more specific IP prefixes than the legitimate owner.", "is_true": true, "confidence": 84, "explanation": "BGP prefers more specific (longer prefix) routes, so announcing /25 beats a legitimate /24."}
+    ]
+  },
+  "us_history": {
+    "easy": [
+      {"claim": "The Declaration of Independence was signed in 1776 in Philadelphia, Pennsylvania.", "is_true": true, "confidence": 97, "explanation": "The Declaration was adopted on July 4, 1776, in Philadelphia."},
+      {"claim": "Abraham Lincoln was the first president of the United States.", "is_true": false, "confidence": 65, "explanation": "George Washington was the first president. Lincoln was the 16th."},
+      {"claim": "The Louisiana Purchase in 1803 roughly doubled the size of the United States.", "is_true": true, "confidence": 88, "explanation": "The Louisiana Purchase added about 828,000 square miles, nearly doubling US territory."},
+      {"claim": "The Civil War was fought primarily over disagreements about tariff policy between Northern and Southern states.", "is_true": false, "confidence": 73, "explanation": "While tariffs were a factor, slavery was the central cause of the Civil War."},
+      {"claim": "Pearl Harbor was attacked by Japan on December 7, 1941, bringing the US into World War II.", "is_true": true, "confidence": 95, "explanation": "The attack on Pearl Harbor led to the US declaring war on Japan the next day."},
+      {"claim": "The Bill of Rights consists of the first ten amendments to the U.S. Constitution.", "is_true": true, "confidence": 93, "explanation": "The Bill of Rights was ratified in 1791 as the first ten amendments."}
+    ],
+    "medium": [
+      {"claim": "The Emancipation Proclamation of 1863 freed all slaves in both Union and Confederate states.", "is_true": false, "confidence": 82, "explanation": "It only freed slaves in Confederate states. Slavery in border Union states continued until the 13th Amendment."},
+      {"claim": "The Monroe Doctrine of 1823 warned European nations against further colonization in the Americas.", "is_true": true, "confidence": 87, "explanation": "Monroe Doctrine declared the Western Hemisphere off-limits to European colonization."},
+      {"claim": "The 19th Amendment, ratified in 1920, granted women the right to vote in the United States.", "is_true": true, "confidence": 91, "explanation": "The 19th Amendment prohibited denying the right to vote based on sex."},
+      {"claim": "The Gulf of Tonkin incident, which escalated US involvement in Vietnam, involved confirmed attacks by North Vietnamese torpedo boats on two separate occasions.", "is_true": false, "confidence": 78, "explanation": "The second alleged attack on August 4, 1964 likely never occurred. Declassified documents show the evidence was questionable."},
+      {"claim": "The Marshall Plan provided economic aid to help rebuild Western European economies after World War II.", "is_true": true, "confidence": 90, "explanation": "The Marshall Plan (1948-1952) provided over $13 billion in economic aid to Western Europe."},
+      {"claim": "The Trail of Tears refers to the forced relocation of Cherokee and other Native American nations during the 1830s under Andrew Jackson's Indian Removal Act.", "is_true": true, "confidence": 86, "explanation": "The Indian Removal Act of 1830 led to the forced relocation of about 60,000 Native Americans."}
+    ],
+    "hard": [
+      {"claim": "The Three-Fifths Compromise counted enslaved people as three-fifths of a person for the purpose of taxation only, not congressional representation.", "is_true": false, "confidence": 74, "explanation": "The Three-Fifths Compromise applied to BOTH congressional representation AND taxation."},
+      {"claim": "The War Powers Resolution of 1973 requires the President to notify Congress within 48 hours of committing armed forces and limits deployment to 60 days without congressional authorization.", "is_true": true, "confidence": 85, "explanation": "The War Powers Resolution sets a 48-hour notification requirement and 60-day limit (plus 30-day withdrawal)."},
+      {"claim": "Executive Order 9066, which led to Japanese American internment, was ruled constitutional by the Supreme Court in Korematsu v. United States and has never been formally overturned.", "is_true": false, "confidence": 81, "explanation": "While Korematsu upheld it in 1944, the Supreme Court in Trump v. Hawaii (2018) explicitly repudiated the Korematsu decision."},
+      {"claim": "The Whiskey Rebellion of 1794 was the first major test of federal authority under the new Constitution, and President Washington personally led troops to suppress it.", "is_true": true, "confidence": 79, "explanation": "Washington personally rode with militia forces to western Pennsylvania, the only sitting president to lead troops in the field."},
+      {"claim": "The Alien and Sedition Acts of 1798 were enacted under President Thomas Jefferson to suppress political opposition from the Federalist Party.", "is_true": false, "confidence": 88, "explanation": "The Alien and Sedition Acts were enacted under President John Adams (a Federalist) to suppress Democratic-Republican opposition. Jefferson opposed them."},
+      {"claim": "The Compromise of 1850 included the Fugitive Slave Act, which required citizens in free states to assist in the capture and return of escaped slaves.", "is_true": true, "confidence": 83, "explanation": "The Fugitive Slave Act of 1850 mandated that escaped slaves be returned and imposed penalties on those who aided them."}
+    ]
+  },
+  "biology": {
+    "easy": [
+      {"claim": "DNA stands for deoxyribonucleic acid and carries genetic instructions for living organisms.", "is_true": true, "confidence": 96, "explanation": "DNA (deoxyribonucleic acid) is the molecule that carries genetic information."},
+      {"claim": "Humans have __(48)__ chromosomes arranged in 24 pairs.", "is_true": false, "confidence": 78, "explanation": "Humans have 46 chromosomes in 23 pairs."},
+      {"claim": "Photosynthesis is the process by which plants convert sunlight, water, and carbon dioxide into glucose and oxygen.", "is_true": true, "confidence": 94, "explanation": "Photosynthesis converts light energy into chemical energy stored in glucose."},
+      {"claim": "Red blood cells carry oxygen using a protein called hemoglobin.", "is_true": true, "confidence": 92, "explanation": "Hemoglobin in red blood cells binds oxygen for transport throughout the body."},
+      {"claim": "Antibiotics are effective treatments for both bacterial and viral infections.", "is_true": false, "confidence": 69, "explanation": "Antibiotics only work against bacteria, not viruses."},
+      {"claim": "The mitochondria is often called the powerhouse of the cell because it generates ATP.", "is_true": true, "confidence": 95, "explanation": "Mitochondria produce ATP through oxidative phosphorylation."}
+    ],
+    "medium": [
+      {"claim": "CRISPR-Cas9 works by using a guide RNA to direct the Cas9 enzyme to a specific DNA sequence for editing.", "is_true": true, "confidence": 88, "explanation": "CRISPR-Cas9 uses guide RNA complementary to the target DNA sequence to direct precise cuts."},
+      {"claim": "Prions are small RNA viruses that cause diseases like mad cow disease (BSE) and Creutzfeldt-Jakob disease.", "is_true": false, "confidence": 76, "explanation": "Prions are misfolded proteins, not RNA viruses. They contain no nucleic acid."},
+      {"claim": "The human gut microbiome contains roughly as many bacterial cells as there are human cells in the body.", "is_true": true, "confidence": 82, "explanation": "Current estimates suggest a roughly 1:1 ratio of bacterial to human cells (about 38 trillion each)."},
+      {"claim": "Epigenetic changes modify gene expression without altering the underlying DNA sequence and can be inherited across generations.", "is_true": true, "confidence": 85, "explanation": "Epigenetic modifications (methylation, histone modification) change expression without changing DNA and can be transgenerational."},
+      {"claim": "Type 1 diabetes is caused by excessive sugar consumption leading to insulin resistance in the pancreas.", "is_true": false, "confidence": 72, "explanation": "Type 1 diabetes is an autoimmune disease where the immune system destroys insulin-producing beta cells. Insulin resistance is Type 2."},
+      {"claim": "Telomeres are repetitive DNA sequences at the ends of chromosomes that shorten with each cell division.", "is_true": true, "confidence": 90, "explanation": "Telomere shortening is associated with cellular aging and limits cell division (Hayflick limit)."}
+    ],
+    "hard": [
+      {"claim": "The endosymbiotic theory proposes that mitochondria evolved from free-living aerobic bacteria engulfed by ancestral eukaryotic cells, supported by mitochondria having their own circular DNA.", "is_true": true, "confidence": 91, "explanation": "Mitochondria retain their own circular DNA, double membranes, and reproduce by binary fission, consistent with endosymbiotic origin."},
+      {"claim": "RNA interference (RNAi) was first discovered in C. elegans by Andrew Fire and Craig Mello, who found that single-stranded RNA was most effective at gene silencing.", "is_true": false, "confidence": 84, "explanation": "Fire and Mello discovered that double-stranded RNA (dsRNA), not single-stranded, was most effective at triggering gene silencing."},
+      {"claim": "The Hardy-Weinberg equilibrium assumes random mating, no natural selection, no genetic drift, no gene flow, and no mutation.", "is_true": true, "confidence": 87, "explanation": "These five conditions must be met for allele frequencies to remain constant across generations."},
+      {"claim": "Horizontal gene transfer occurs exclusively in prokaryotes and has never been documented in eukaryotic organisms.", "is_true": false, "confidence": 79, "explanation": "Horizontal gene transfer also occurs in eukaryotes, including plants, fungi, and some animals (e.g., bdelloid rotifers)."},
+      {"claim": "The lac operon in E. coli is an example of positive regulation, where the presence of lactose activates gene transcription.", "is_true": false, "confidence": 83, "explanation": "The lac operon is actually an example of both negative regulation (repressor) AND positive regulation (CAP-cAMP). Lactose removes the repressor (negative regulation), while low glucose enables CAP activation (positive regulation)."},
+      {"claim": "Meselson and Stahl's experiment using nitrogen isotopes demonstrated that DNA replication is semiconservative.", "is_true": true, "confidence": 93, "explanation": "Their 1958 experiment showed each new DNA molecule consists of one old strand and one new strand."}
+    ]
+  },
+  "physics": {
+    "easy": [
+      {"claim": "Light travels faster than sound, which is why you see lightning before hearing thunder.", "is_true": true, "confidence": 95, "explanation": "Light travels at ~300,000 km/s vs sound at ~343 m/s in air."},
+      {"claim": "Gravity on the Moon is about half the gravity on Earth.", "is_true": false, "confidence": 81, "explanation": "Lunar gravity is about 1/6th of Earth's gravity, not half."},
+      {"claim": "Einstein's famous equation E=mc^2 shows that energy and mass are interchangeable.", "is_true": true, "confidence": 93, "explanation": "Mass-energy equivalence is a fundamental principle of special relativity."},
+      {"claim": "An object in motion stays in motion unless acted upon by an external force, according to Newton's first law.", "is_true": true, "confidence": 97, "explanation": "Newton's first law of motion describes inertia."},
+      {"claim": "Absolute zero, the lowest possible temperature, is -273.15 degrees Fahrenheit.", "is_true": false, "confidence": 74, "explanation": "Absolute zero is -273.15 degrees Celsius (or -459.67 degrees Fahrenheit)."},
+      {"claim": "Sound cannot travel through a vacuum because it requires a medium to propagate.", "is_true": true, "confidence": 91, "explanation": "Sound waves are mechanical waves that need a medium (solid, liquid, or gas)."}
+    ],
+    "medium": [
+      {"claim": "The Heisenberg uncertainty principle states that you cannot simultaneously know the exact position and exact momentum of a particle.", "is_true": true, "confidence": 90, "explanation": "The uncertainty principle is a fundamental limit, not a measurement limitation."},
+      {"claim": "Black holes emit thermal radiation, known as Hawking radiation, which causes them to slowly lose mass and eventually evaporate.", "is_true": true, "confidence": 86, "explanation": "Hawking predicted in 1974 that quantum effects near the event horizon produce thermal radiation."},
+      {"claim": "The speed of light in a vacuum is exactly 299,792,458 meters per second and varies slightly depending on the observer's reference frame.", "is_true": false, "confidence": 79, "explanation": "The speed of light in vacuum is constant for ALL observers regardless of reference frame. This is the core postulate of special relativity."},
+      {"claim": "Quantum entanglement allows instantaneous communication between entangled particles across any distance.", "is_true": false, "confidence": 68, "explanation": "Entanglement correlates measurement outcomes but cannot transmit information faster than light (no-communication theorem)."},
+      {"claim": "The photoelectric effect, explained by Einstein in 1905, demonstrated that light behaves as discrete packets of energy called photons.", "is_true": true, "confidence": 92, "explanation": "Einstein's explanation of the photoelectric effect was key evidence for wave-particle duality."},
+      {"claim": "In general relativity, massive objects cause spacetime to curve, and this curvature is what we experience as gravity.", "is_true": true, "confidence": 94, "explanation": "Einstein's general relativity describes gravity as the curvature of spacetime caused by mass and energy."}
+    ],
+    "hard": [
+      {"claim": "The Casimir effect demonstrates that two uncharged metallic plates in a vacuum experience an attractive force due to quantum vacuum fluctuations.", "is_true": true, "confidence": 85, "explanation": "The Casimir effect arises because fewer virtual photon modes fit between the plates than outside them."},
+      {"claim": "In quantum field theory, the running coupling constant of QCD means the strong force gets weaker at higher energies, a property called infrared freedom.", "is_true": false, "confidence": 77, "explanation": "The correct term is asymptotic freedom (not infrared freedom). QCD coupling weakens at HIGH energy/short distances."},
+      {"claim": "The holographic principle suggests that all information contained in a volume of space can be represented as a theory on the boundary of that region.", "is_true": true, "confidence": 82, "explanation": "Proposed by 't Hooft and Susskind, the holographic principle is central to the AdS/CFT correspondence."},
+      {"claim": "Bell's theorem proves that no local hidden variable theory can reproduce all predictions of quantum mechanics, ruling out local realism.", "is_true": true, "confidence": 88, "explanation": "Bell's inequality violations in experiments confirm that quantum mechanics is incompatible with local hidden variables."},
+      {"claim": "The cosmological constant problem arises because quantum field theory predicts vacuum energy density 10^40 times larger than observed.", "is_true": false, "confidence": 75, "explanation": "The discrepancy is actually about 10^120 times, making it one of the largest known discrepancies between theory and observation."},
+      {"claim": "Bose-Einstein condensation occurs when bosons are cooled to near absolute zero and collapse into the same quantum state, forming a superfluid.", "is_true": true, "confidence": 84, "explanation": "BEC was first achieved experimentally in 1995 with rubidium atoms by Cornell and Wieman."}
+    ]
+  },
+  "geography": {
+    "easy": [
+      {"claim": "The Sahara Desert is located in northern Africa and is the largest hot desert in the world.", "is_true": true, "confidence": 93, "explanation": "The Sahara covers about 9.2 million square kilometers in northern Africa."},
+      {"claim": "Mount Everest is located on the border between India and China.", "is_true": false, "confidence": 76, "explanation": "Mount Everest is on the border between Nepal and China (Tibet), not India."},
+      {"claim": "The Amazon River is the longest river in the world.", "is_true": false, "confidence": 71, "explanation": "The Nile is generally considered the longest river. The Amazon is the largest by volume."},
+      {"claim": "Australia is both a country and a continent.", "is_true": true, "confidence": 92, "explanation": "Australia is the world's smallest continent and a sovereign nation."},
+      {"claim": "The Pacific Ocean is the largest and deepest ocean on Earth.", "is_true": true, "confidence": 95, "explanation": "The Pacific covers about 165.25 million square kilometers, more than all land area combined."},
+      {"claim": "Russia spans two continents: Europe and Asia, with the Ural Mountains forming the traditional boundary.", "is_true": true, "confidence": 89, "explanation": "The Ural Mountains are the conventional boundary between European and Asian Russia."}
+    ],
+    "medium": [
+      {"claim": "The Dead Sea, located between Israel and Jordan, is the lowest point on Earth's land surface at about 430 meters below sea level.", "is_true": true, "confidence": 87, "explanation": "The Dead Sea surface is about 430.5 meters below sea level and continues to drop."},
+      {"claim": "Iceland sits on the Mid-Atlantic Ridge, which is why it has significant volcanic and geothermal activity.", "is_true": true, "confidence": 91, "explanation": "Iceland straddles the divergent boundary between the North American and Eurasian plates."},
+      {"claim": "The Caspian Sea is technically a lake because it is entirely enclosed by land, making it the world's largest lake by surface area.", "is_true": true, "confidence": 78, "explanation": "Despite being called a sea, the Caspian is an enclosed body of water and the world's largest lake."},
+      {"claim": "The Mariana Trench, the deepest point in the ocean, is located in the Atlantic Ocean near the Caribbean islands.", "is_true": false, "confidence": 65, "explanation": "The Mariana Trench is in the western Pacific Ocean, near the Mariana Islands."},
+      {"claim": "The Strait of Hormuz connects the Persian Gulf to the Arabian Sea and is one of the world's most strategic oil transit chokepoints.", "is_true": false, "confidence": 86, "explanation": "The Strait of Hormuz connects the Persian Gulf to the Gulf of Oman (not directly to the Arabian Sea), though the Gulf of Oman leads to the Arabian Sea."},
+      {"claim": "Lake Baikal in Siberia contains roughly 20% of the world's unfrozen freshwater and is the deepest lake on Earth.", "is_true": true, "confidence": 84, "explanation": "Lake Baikal reaches 1,642 meters deep and holds about 23,615 cubic kilometers of freshwater."}
+    ],
+    "hard": [
+      {"claim": "The Tibetan Plateau, sometimes called the Third Pole, holds the largest store of ice outside the Arctic and Antarctic regions.", "is_true": true, "confidence": 80, "explanation": "The Tibetan Plateau and surrounding mountains contain the largest ice mass outside the polar regions."},
+      {"claim": "Dogger Bank, a large sandbank in the North Sea, was dry land during the last Ice Age and connected Britain to continental Europe.", "is_true": true, "confidence": 83, "explanation": "Doggerland was a landmass connecting Britain to Europe until about 8,000 years ago when rising seas submerged it."},
+      {"claim": "The Great Rift Valley in East Africa is a convergent plate boundary where the African and Somali plates are colliding.", "is_true": false, "confidence": 77, "explanation": "The East African Rift is a DIVERGENT boundary where the African plate is splitting apart, not converging."},
+      {"claim": "The Danakil Depression in Ethiopia is one of the hottest places on Earth and sits at a triple junction of three tectonic plates.", "is_true": true, "confidence": 82, "explanation": "The Afar Triple Junction is where the Nubian, Somali, and Arabian plates meet, creating extreme geological activity."},
+      {"claim": "The Antarctic Treaty of 1959 permanently assigns territorial claims to the seven nations that originally claimed sectors of Antarctica.", "is_true": false, "confidence": 89, "explanation": "The Antarctic Treaty freezes (but does not resolve or assign) existing territorial claims and prohibits new ones."},
+      {"claim": "The Sargasso Sea is unique among seas because it has no land boundaries and is defined entirely by ocean currents.", "is_true": true, "confidence": 86, "explanation": "The Sargasso Sea is bounded by the Gulf Stream, North Atlantic Current, Canary Current, and North Atlantic Equatorial Current."}
+    ]
+  },
+  "ai_ml": {
+    "easy": [
+      {"claim": "Machine learning is a subset of artificial intelligence that allows systems to learn from data.", "is_true": true, "confidence": 94, "explanation": "ML is indeed a subfield of AI focused on learning patterns from data."},
+      {"claim": "Neural networks are modeled after the human brain and contain actual biological neurons.", "is_true": false, "confidence": 68, "explanation": "Neural networks are mathematical models inspired by biological neurons, but use artificial nodes, not biological ones."},
+      {"claim": "GPT stands for Generative Pre-trained Transformer.", "is_true": true, "confidence": 96, "explanation": "GPT stands for Generative Pre-trained Transformer, a type of language model architecture."},
+      {"claim": "Supervised learning requires labeled training data, while unsupervised learning does not.", "is_true": true, "confidence": 92, "explanation": "Supervised learning uses input-output pairs; unsupervised learning finds patterns in unlabeled data."},
+      {"claim": "Deep learning models always perform better than traditional machine learning on every type of problem.", "is_true": false, "confidence": 73, "explanation": "Traditional ML can outperform deep learning on small datasets, tabular data, and problems where interpretability matters."},
+      {"claim": "The Turing Test measures whether a machine can exhibit intelligent behavior indistinguishable from a human.", "is_true": true, "confidence": 91, "explanation": "Proposed by Alan Turing in 1950, it tests if a human evaluator can distinguish machine from human responses."}
+    ],
+    "medium": [
+      {"claim": "Transformer models use self-attention mechanisms to process all tokens in a sequence simultaneously, unlike RNNs which process sequentially.", "is_true": true, "confidence": 89, "explanation": "Self-attention allows parallel processing of all positions, a key advantage over sequential RNN processing."},
+      {"claim": "Batch normalization was introduced to solve the vanishing gradient problem by normalizing inputs to each layer during training.", "is_true": false, "confidence": 80, "explanation": "Batch normalization was introduced to address internal covariate shift, not specifically the vanishing gradient problem (which is more addressed by residual connections and activation functions)."},
+      {"claim": "In reinforcement learning, the explore-exploit tradeoff balances trying new actions versus choosing known good actions.", "is_true": true, "confidence": 88, "explanation": "Exploration discovers potentially better strategies while exploitation maximizes known rewards."},
+      {"claim": "Transfer learning allows a model trained on one task to be fine-tuned for a different but related task, reducing training time and data requirements.", "is_true": true, "confidence": 93, "explanation": "Transfer learning leverages pre-trained representations, a cornerstone of modern NLP and computer vision."},
+      {"claim": "The softmax function in neural networks converts logits into probabilities that always sum to exactly 1.0.", "is_true": true, "confidence": 85, "explanation": "Softmax normalizes a vector of real numbers into a probability distribution."},
+      {"claim": "GANs (Generative Adversarial Networks) consist of three networks: a generator, a discriminator, and a validator.", "is_true": false, "confidence": 75, "explanation": "GANs consist of only two networks: a generator and a discriminator. There is no validator."}
+    ],
+    "hard": [
+      {"claim": "The attention mechanism in transformers computes compatibility scores between queries and keys using scaled dot-product attention, where scaling by sqrt(d_k) prevents gradients from becoming too small.", "is_true": false, "confidence": 82, "explanation": "The scaling prevents the dot products from becoming too LARGE (not too small), which would push softmax into regions with extremely small gradients."},
+      {"claim": "LoRA (Low-Rank Adaptation) fine-tunes large language models by adding trainable low-rank decomposition matrices to existing weight matrices, keeping original weights frozen.", "is_true": true, "confidence": 87, "explanation": "LoRA decomposes weight updates into low-rank matrices, dramatically reducing trainable parameters while keeping base weights frozen."},
+      {"claim": "Constitutional AI (CAI) trains models using human feedback on every output, requiring significantly more human annotation than standard RLHF.", "is_true": false, "confidence": 79, "explanation": "CAI uses AI feedback guided by a set of principles (a constitution), specifically to REDUCE the need for human annotation compared to RLHF."},
+      {"claim": "The lottery ticket hypothesis suggests that dense neural networks contain sparse subnetworks that can achieve comparable performance when trained in isolation from initialization.", "is_true": true, "confidence": 84, "explanation": "Frankle and Carlin (2019) showed that randomly initialized networks contain sparse subnetworks (winning tickets) that match full network performance."},
+      {"claim": "In diffusion models, the forward process gradually adds Gaussian noise to data, and the reverse process learns to denoise, generating new samples from pure noise.", "is_true": true, "confidence": 91, "explanation": "Denoising diffusion probabilistic models (DDPMs) learn the reverse of a noise-adding Markov chain."},
+      {"claim": "Mixture of Experts (MoE) models activate all expert networks for every input token to maximize model capacity utilization.", "is_true": false, "confidence": 76, "explanation": "MoE models use a gating network to route each token to only a few experts (typically top-k), which is what makes them efficient despite having many parameters."}
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+services:
+  neuroscan:
+    build: .
+    container_name: demo-neuroscan
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - TORCH_CUDA_ARCH_LIST=12.1
+      - REDIS_URL=${REDIS_URL:-redis://demo-redis:6379/14}
+      # Source reads LITELLM_BASE_URL directly; point it at any
+      # OpenAI-compatible endpoint (e.g. host's Ollama).
+      - LITELLM_BASE_URL=${OLLAMA_BASE_URL:?set OLLAMA_BASE_URL in .env to your Ollama OpenAI-compatible endpoint (e.g. http://host.docker.internal:11434/v1)}
+      - LITELLM_API_KEY=not-used
+      - LITELLM_MODEL=${LLM_MODEL:?set LLM_MODEL in .env}
+      - LLM_MODEL=${LLM_MODEL}
+      - OPENAI_BASE_URL=${OLLAMA_BASE_URL}
+      - HF_TOKEN=${HF_TOKEN:-}
+      # Langfuse not bundled — leave host empty to no-op observability.
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+    volumes:
+      - neuroscan-model-cache:/root/.cache/huggingface
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
+
+  # ── Bundled dependencies ──
+  redis:
+    image: redis:7-alpine
+    container_name: demo-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - neuroscan-redis-data:/data
+    command: redis-server --appendonly yes --databases 20
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional HTTPS reverse proxy (--profile proxy).
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["proxy"]
+    container_name: neuroscan-caddy
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8081}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - neuroscan-caddy-data:/data
+      - neuroscan-caddy-config:/config
+    depends_on:
+      - neuroscan
+
+volumes:
+  neuroscan-model-cache:
+  neuroscan-redis-data:
+  neuroscan-caddy-data:
+  neuroscan-caddy-config:

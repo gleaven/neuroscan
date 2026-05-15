@@ -1,0 +1,35 @@
+{
+  "demo": true,
+  "model": "gpt2-small",
+  "type": "embedding_inversion",
+  "original_text": "The password to the admin panel is hunter2",
+  "original_tokens": ["<|endoftext|>", "The", " password", " to", " the", " admin", " panel", " is", " hunter", "2"],
+  "reconstructed_text": "password admin panel hunter credentials access system login key",
+  "reconstructed_tokens": [
+    {"token": "password", "similarity": 0.89, "position": 0},
+    {"token": "admin", "similarity": 0.84, "position": 1},
+    {"token": "panel", "similarity": 0.78, "position": 2},
+    {"token": "hunter", "similarity": 0.72, "position": 3},
+    {"token": "credentials", "similarity": 0.65, "position": 4},
+    {"token": "access", "similarity": 0.61, "position": 5},
+    {"token": "system", "similarity": 0.58, "position": 6},
+    {"token": "login", "similarity": 0.54, "position": 7},
+    {"token": "key", "similarity": 0.49, "position": 8}
+  ],
+  "reconstruction_similarity": 0.71,
+  "token_recovery_rate": 0.40,
+  "matching_tokens": ["password", "admin", "panel", "hunter"],
+  "token_comparison": [
+    {"token": "<|endoftext|>", "recovered": false},
+    {"token": "The", "recovered": false},
+    {"token": "password", "recovered": true},
+    {"token": "to", "recovered": false},
+    {"token": "the", "recovered": false},
+    {"token": "admin", "recovered": true},
+    {"token": "panel", "recovered": true},
+    {"token": "is", "recovered": false},
+    {"token": "hunter", "recovered": true},
+    {"token": "2", "recovered": false}
+  ],
+  "embedding_dim": 768
+}

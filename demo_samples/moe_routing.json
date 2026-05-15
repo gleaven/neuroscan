@@ -1,0 +1,24 @@
+{
+  "demo": true,
+  "model": "gpt2-small",
+  "type": "moe_routing",
+  "tokens": ["<|endoftext|>", "The", " quick", " brown", " fox", " jumps", " over", " the", " lazy", " dog"],
+  "n_layers": 12,
+  "n_experts": 8,
+  "top_k": 2,
+  "expert_load": [0.14, 0.11, 0.13, 0.12, 0.15, 0.09, 0.13, 0.13],
+  "load_balance": 0.87,
+  "is_simulated": true,
+  "routing": [
+    {
+      "layer": 0,
+      "routing": [
+        {"token": "<BOS>", "position": 0, "expert_probs": [0.18, 0.15, 0.12, 0.11, 0.10, 0.13, 0.11, 0.10], "active_experts": [{"expert_id": 0, "probability": 0.18}, {"expert_id": 1, "probability": 0.15}]},
+        {"token": "The", "position": 1, "expert_probs": [0.12, 0.08, 0.22, 0.10, 0.14, 0.11, 0.12, 0.11], "active_experts": [{"expert_id": 2, "probability": 0.22}, {"expert_id": 4, "probability": 0.14}]},
+        {"token": "quick", "position": 2, "expert_probs": [0.08, 0.10, 0.11, 0.24, 0.12, 0.11, 0.13, 0.11], "active_experts": [{"expert_id": 3, "probability": 0.24}, {"expert_id": 6, "probability": 0.13}]},
+        {"token": "brown", "position": 3, "expert_probs": [0.09, 0.11, 0.12, 0.21, 0.13, 0.10, 0.14, 0.10], "active_experts": [{"expert_id": 3, "probability": 0.21}, {"expert_id": 6, "probability": 0.14}]},
+        {"token": "fox", "position": 4, "expert_probs": [0.10, 0.13, 0.11, 0.08, 0.22, 0.12, 0.11, 0.13], "active_experts": [{"expert_id": 4, "probability": 0.22}, {"expert_id": 1, "probability": 0.13}]}
+      ]
+    }
+  ]
+}
