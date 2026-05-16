@@ -461,3 +461,49 @@ composite report to the Dashboard.
 ## Credits
 
 Built by Andrew Meinecke.
+
+## Components & Licensing
+
+This demo is released under Apache License 2.0. It bundles or wraps
+the following third-party components, each retaining its own license:
+
+| Component | License | Use in this demo |
+|---|---|---|
+| [PyTorch](https://github.com/pytorch/pytorch) 2.9.1 + CUDA 13 | BSD-3 | GPU autodiff for activation capture, steering, and abliteration |
+| [HuggingFace `transformers`](https://github.com/huggingface/transformers) (via TransformerLens) | Apache 2.0 | Model loading and tokenization |
+| [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens) | MIT | Hookable activation capture for circuit tracing, probes, abliteration |
+| [SAELens](https://github.com/jbloomAus/SAELens) | MIT | Sparse-autoencoder feature decomposition |
+| [nanoGCG](https://github.com/GraySwanAI/nanoGCG) | MIT | Greedy Coordinate Gradient adversarial-suffix search |
+| [repeng](https://github.com/vgel/repeng) | MIT | Representation-engineering control vectors (steering) |
+| [Detoxify](https://github.com/unitaryai/detoxify) | Apache 2.0 | Toxicity classifier for benchmark scoring |
+| [HuggingFace `datasets`](https://github.com/huggingface/datasets) | Apache 2.0 | Benchmark loading (TruthfulQA, CrowS, etc.) |
+| [Optuna](https://github.com/optuna/optuna) | MIT | Abliteration weight optimisation |
+| [PaCMAP](https://github.com/YingfanWang/PaCMAP) | Apache 2.0 | Embedding-space dimensionality reduction |
+| [FastAPI](https://github.com/fastapi/fastapi) | MIT | HTTP + WebSocket server |
+| [Redis](https://github.com/redis/redis) (bundled `redis:7-alpine`) | RSALv2 / SSPLv1 (dual) | Run-state persistence |
+| LLM served over OpenAI-compatible HTTP (default: [Ollama](https://github.com/ollama/ollama), MIT) | per chosen model | Target model for red-teaming and narration |
+
+### Research lineage
+
+The abliteration and refusal-direction code in
+`abliteration_engine.py` and `optimizer_engine.py` draws on prior
+open-source work and is credited inline:
+
+- [**p-e-w/Heretic**](https://github.com/p-e-w/heretic) — Optuna-based
+  weight-orthogonalisation abliteration; NEUROSCAN's optimizer engine
+  is directly inspired by Heretic's dual-objective formulation.
+- [**NousResearch/llm-abliteration**](https://github.com/NousResearch/llm-abliteration)
+  and **FailSpy**'s abliteration work — refusal-direction discovery.
+- The norm-preserving / biprojected abliteration literature.
+
+No upstream code from these projects is vendored; the techniques are
+re-implemented against TransformerLens. The 33-marker
+refusal-detection list in `abliteration_engine.py` is derived from
+Heretic and FailSpy's published marker sets.
+
+### License notes
+
+Model weights you point NEUROSCAN at carry their own license — accept
+them on first use (this includes any HF-gated models you load via
+`HF_TOKEN`). Redis 7.4+ uses the dual RSALv2 / SSPLv1 license; the
+RSALv2 path covers normal use.
